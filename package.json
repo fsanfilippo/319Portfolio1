@@ -5,8 +5,11 @@
     "node": ">= v0.6"
   },
   "dependencies": {
+    "bootstrap": "^4.0.0-beta",
     "express": "^4.15.4",
+    "jquery": "^3.2.1",
     "mongodb": "1.2.14",
-    "monk": "0.7.1"
+    "monk": "0.7.1",
+    "popper.js": "^1.12.5"
   }
 }

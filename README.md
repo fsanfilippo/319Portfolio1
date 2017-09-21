@@ -1,2 +1,2 @@
-# MyWebSiteProject
-My website that I will be tinkering with
+# 319 Portfolio Project
+Portfolio number uno for COMS 319
