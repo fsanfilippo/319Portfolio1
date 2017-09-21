@@ -1,0 +1,12 @@
+{
+  "name": "mongoui",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">= v0.6"
+  },
+  "dependencies": {
+    "express": "^4.15.4",
+    "mongodb": "1.2.14",
+    "monk": "0.7.1"
+  }
+}
