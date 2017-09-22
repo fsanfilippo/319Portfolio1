@@ -1,8 +1,8 @@
-var mongo = require('mongodb');
+//var mongo = require('mongodb');
 var express = require('express');
 var path    = require("path");
-var monk = require('monk');
-var db =  monk('localhost:27017/mydb');
+//var monk = require('monk');
+//var db =  monk('localhost:27017/mydb');
 var app = new express();
 
 app.use(express.static(__dirname + '/views'));
@@ -54,4 +54,4 @@ wsServer.on('request', function(request) {
   });
 });
 
-app.listen(3000)
+app.listen(3000);
