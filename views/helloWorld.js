@@ -30,7 +30,7 @@ $(function () {
   });
 
 //message Sending function
-function sendMessage(){
-  var message = $('#inputBox').val();
-  connection.send(message);
+function sendMessage(x, y){
+  var msg = JSON.stringify({x:x, y:y});
+  connection.send(msg);
 }

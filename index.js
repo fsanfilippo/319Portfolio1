@@ -15,13 +15,7 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/helloWord.html'));
 });
 
-/**app.get('/collections/:name',function(req,res){
-  var collection = db.get(req.params.name);
-  collection.find({},{limit:20},function(e,docs){
-    res.json(docs);
-  })
-});**/
-
+var twoConnections = new Map();
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 
@@ -37,22 +31,23 @@ wsServer = new WebSocketServer({
   httpServer: server
 });
 
+var i = 0;
 // WebSocket server
 wsServer.on('request', function(request) {
   var connection = request.accept(null, request.origin);
-
+  twoConnections.set(i++, connection);
   // This is the most important callback for us, we'll handle
   // all messages from users here.
-  connection.on('message', function(message) {
-    if (message.type === 'utf8') {
-      console.log(message);
-      console.log("asdfasdf");
-    }
-  });
+  connection.on('message', broadcast);
 
   connection.on('close', function(connection) {
     // close user connection
   });
 });
+
+broadcast = function broadcastMsg(message) {
+  console.log(message.utf8Data);
+  
+};
 
 app.listen(3000);
