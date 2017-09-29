@@ -1,9 +1,10 @@
 console.log("Hello World!");
+var connection;
 $(function () {
     // if user is running mozilla then use it's built-in WebSocket
     window.WebSocket = window.WebSocket || window.MozWebSocket;
   
-    var connection = new WebSocket('ws://127.0.0.1:1337');
+    connection = new WebSocket('ws://127.0.0.1:1337');
   
     connection.onopen = function () {
       console.log("Connection Open!");// connection is opened and ready to use
@@ -25,4 +26,11 @@ $(function () {
       }
       // handle incoming message
     };
+
   });
+
+//message Sending function
+function sendMessage(){
+  var message = $('#inputBox').val();
+  connection.send(message);
+}

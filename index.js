@@ -45,7 +45,8 @@ wsServer.on('request', function(request) {
   // all messages from users here.
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
-      // process WebSocket message
+      console.log(message);
+      console.log("asdfasdf");
     }
   });
 
