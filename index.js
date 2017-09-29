@@ -1,8 +1,8 @@
-var mongo = require('mongodb');
+//var mongo = require('mongodb');
 var express = require('express');
 var path    = require("path");
-var monk = require('monk');
-var db =  monk('localhost:27017/mydb');
+//var monk = require('monk');
+//var db =  monk('localhost:27017/mydb');
 var app = new express();
 
 app.use(express.static(__dirname + '/views'));
@@ -15,13 +15,7 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/helloWord.html'));
 });
 
-/**app.get('/collections/:name',function(req,res){
-  var collection = db.get(req.params.name);
-  collection.find({},{limit:20},function(e,docs){
-    res.json(docs);
-  })
-});**/
-
+var twoConnections = new Map();
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 
@@ -37,21 +31,26 @@ wsServer = new WebSocketServer({
   httpServer: server
 });
 
+var i = 0;
 // WebSocket server
 wsServer.on('request', function(request) {
   var connection = request.accept(null, request.origin);
-
+  twoConnections.set(i++, connection);
   // This is the most important callback for us, we'll handle
   // all messages from users here.
-  connection.on('message', function(message) {
-    if (message.type === 'utf8') {
-      // process WebSocket message
-    }
-  });
+  connection.on('message', broadcast);
 
   connection.on('close', function(connection) {
     // close user connection
   });
 });
 
-app.listen(3000)
+broadcast = function broadcastMsg(message) {
+  var msgObj =JSON.parse(message.utf8Data);
+  var x = msgObj.x;
+  var y = msgObj.y;
+  console.log("( " + x + ", " + y + " )");
+  
+};
+
+app.listen(3000);

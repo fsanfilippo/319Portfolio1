@@ -6,12 +6,18 @@
     <script src="/js/umd/popper.min.js" type="text/javascript"></script>
     <script src="/js/bootstrap.min.js"></script>
     <script src="helloWorld.js"></script>
+    <script src="snake.js"></script>
 </head>
 <body>
     <div class = "container">
+        <button onclick="turnLeft()">Turn Left</button>
+        <button onclick="turnRight()">Turn Right</button>
+        <button onClick="stop()">Stop</button>
         <div class = "jumbotron">
             <h1 class = "display-3">319 Website</h1>
         </div>
+        <input type="text" id="inputBox"></input>
+        <button onclick="sendMessage()">Send</button>
     </div>
 </body>
 </html>
