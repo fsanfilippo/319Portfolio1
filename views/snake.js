@@ -1,21 +1,26 @@
-var canvas = document.createElement("canvas");
-canvas.width = 500;
-canvas.height = 200;
-var ctx = canvas.getContext("2d");
 var x = 0;
 var y = 0;
 
-window.onload = function(){
-
-
-document.body.insertBefore(canvas, document.body.childNodes[0]);
-}
 //0 = up, 1 = right, 2 = down, 3 = left
-var direction = 1; 
+var direction; 
+var canvas;
+var ctx;
+var interval;
 
-var interval = setInterval(function(){
-    updateGame();
-}, 1000);
+function initGame(){
+    canvas = document.createElement("canvas");
+    console.log(canvas);
+    canvas.width = 500;
+    canvas.height = 200;
+    ctx = canvas.getContext("2d");
+    document.body.insertBefore(canvas, document.body.childNodes[0]);
+    direction = 1;
+
+    interval = setInterval(function(){
+        updateGame();
+    }, 10);
+}
+
 
 function turnLeft(){
     if(direction == 0){

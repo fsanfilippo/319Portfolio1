@@ -46,7 +46,10 @@ wsServer.on('request', function(request) {
 });
 
 broadcast = function broadcastMsg(message) {
-  console.log(message.utf8Data);
+  var msgObj =JSON.parse(message.utf8Data);
+  var x = msgObj.x;
+  var y = msgObj.y;
+  console.log("( " + x + ", " + y + " )");
   
 };
 

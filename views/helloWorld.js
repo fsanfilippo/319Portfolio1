@@ -8,6 +8,7 @@ $(function () {
   
     connection.onopen = function () {
       console.log("Connection Open!");// connection is opened and ready to use
+      initGame();
     };
   
     connection.onerror = function (error) {
