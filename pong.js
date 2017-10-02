@@ -251,10 +251,24 @@ function checkCollision(){
 	
 	if(vertices[24] < -0.99){
 		scoreright = scoreright + 1;
+		resetBall();
 	}
 	if(vertices[26] > 0.99){
 		scoreleft = scoreleft + 1;
+		resetBall();
 	}
+}
+
+function resetBall(){
+	vertices[24] = -0.03;
+	vertices[25] = -0.06;
+	vertices[26] = 0.03;
+	vertices[27] = -0.06;
+	vertices[28] = 0.03;
+	vertices[29] = 0.06;
+	vertices[30] = -0.03;
+	vertices[31] = 0.06;
+	ballspeedX = ballspeedX*(-1);
 }
 
 function handleInput(){
