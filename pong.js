@@ -206,10 +206,15 @@ function animate(){
 		handleInput();
 		moveball();
 		checkCollision();
+		setScore();
 		setVertexArray();
 		draw();
 		
 	}
+}
+
+function setScore(){
+	document.getElementById('score').innerHTML = scoreleft+"-"+scoreright;
 }
 
 function moveball(){
@@ -244,11 +249,11 @@ function checkCollision(){
 		}
 	}
 	
-	if(vertices[24] < -1.0){
-		scoreleft++;
+	if(vertices[24] < -0.99){
+		scoreright = scoreright + 1;
 	}
-	if(vertices[26] > 1.0){
-		scoreright++;
+	if(vertices[26] > 0.99){
+		scoreleft = scoreleft + 1;
 	}
 }
 
