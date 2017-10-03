@@ -10,8 +10,8 @@ var scoreleft = 0;
 var scoreright = 0;
 
 var movespeed = 0.06;
-var ballspeedX = 0.01;
-var ballspeedY = 0.01;
+var ballspeedX = 0.02;
+var ballspeedY = 0.02;
 
 
 var numPoints = 12;
@@ -237,7 +237,18 @@ function checkCollision(){
 		(vertices[30] > vertices[8] && vertices[30] < vertices[10])){
 		if((vertices[29] > vertices[11] && vertices[29] < vertices[13]) ||
 			(vertices[27] > vertices[11] && vertices[27] < vertices[13])){
-				ballspeedX = ballspeedX*-1.0;
+				
+				if(leftup){
+					
+					ballspeedY = ballspeedY*(-1.5);
+					ballspeedX = ballspeedX*(-1.0);
+				} else if(leftdown){
+					
+					ballspeedY = ballspeedY*(-0.5);
+					ballspeedX = ballspeedX*(-1.0);
+				} else{
+					ballspeedX = ballspeedX*-1.0;
+				}
 		}
 	}
 	
@@ -245,7 +256,17 @@ function checkCollision(){
 		(vertices[28] > vertices[16] && vertices[28] < vertices[18])){
 		if((vertices[29] > vertices[17] && vertices[29] < vertices[23]) ||
 			(vertices[27] > vertices[17] && vertices[27] < vertices[23])){
-				ballspeedX = ballspeedX*-1.0;
+				if(leftup){
+					
+					ballspeedY = ballspeedY*(-1.5);
+					ballspeedX = ballspeedX*(-1.0);
+				} else if(leftdown){
+					
+					ballspeedY = ballspeedY*(-0.5);
+					ballspeedX = ballspeedX*(-1.0);
+				} else{
+					ballspeedX = ballspeedX*-1.0;
+				}
 		}
 	}
 	
