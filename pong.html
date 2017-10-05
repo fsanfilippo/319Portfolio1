@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PONG!!!!!!</title>
+</head>
+
+<body> 
+
+
+<script id="vertexShader" type="x-shader/x-vertex">
+attribute vec4 a_Position;
+
+void main() 
+{
+  gl_Position = a_Position;
+}
+</script>
+
+<script id="fragmentShader" type="x-shader/x-fragment">
+// In a webgl fragment shader, float precision has to be specified before
+// any other variable declarations (in this case, "medium" precision)
+precision mediump float;
+uniform vec4 u_Color;
+void main() 
+{
+	gl_FragColor = vec4(0.8,1.0,0.8,1.0);
+}
+</script>
+
+	<h2 id="score">0-0</h2>
+
+	<canvas id="theCanvas" width="1000" height="500">
+    Please use a browser that supports "canvas"
+    </canvas>
+	
+	
+
+		<script src="resources/webgl-utils.js"></script>
+		<script src="resources/webgl-debug.js"></script>
+		<script src="resources/cuon-utils.js"></script>
+		<script src="pong.js"></script>
+		<script>window.onload = main</script>
+</body>
+</html>
