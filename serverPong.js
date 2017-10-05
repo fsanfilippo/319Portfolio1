@@ -66,49 +66,7 @@ var shader;
 
 
 
-function draw()
-{
-	  gl.clear(gl.COLOR_BUFFER_BIT);
-	  
 
-	  gl.useProgram(shader);
-
-	  gl.bindBuffer(gl.ARRAY_BUFFER, vertexbuffer);
-
-	  var positionIndex = gl.getAttribLocation(shader, 'a_Position');
-	  if (positionIndex < 0) {
-		console.log('Failed to get the storage location of a_Position');
-		return;
-	  }
-
-	  gl.enableVertexAttribArray(positionIndex);
-	  
-	  gl.vertexAttribPointer(positionIndex, 2, gl.FLOAT, false, 0, 0);
-
-	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-	  
-
-	  
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, borderindexbuffer);
-	  gl.drawElements(gl.LINES, numBorderIndices, gl.UNSIGNED_SHORT, 0);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, leftpaddleindexbuffer);
-	  gl.drawElements(gl.TRIANGLES, numLeftPaddleIndices, gl.UNSIGNED_SHORT, 0);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, rightpaddleindexbuffer);
-	  gl.drawElements(gl.TRIANGLES, numRightPaddleIndices, gl.UNSIGNED_SHORT, 0);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ballindexbuffer);
-	  gl.drawElements(gl.TRIANGLES, numBallIndices, gl.UNSIGNED_SHORT, 0);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-	  gl.disableVertexAttribArray(positionIndex);
-	  gl.useProgram(null);
-
-}
 
 
 function main(){
@@ -194,26 +152,10 @@ function main(){
 
 }
 
-function animate(){
-	requestAnimationFrame(animate);
-	
-	now = Date.now();
-	elapsed = now - before;
-	
-	if(elapsed > fpsInterval){
-		before = now - (elapsed % fpsInterval);
-		handleInput();
-		moveball();
-		checkCollision();
-		setScore();
-		setVertexArray();
-		draw();
-		
-	}
-}
+
 
 function setScore(){
-	document.getElementById('score').innerHTML = scoreleft+"-"+scoreright;
+	
 }
 
 function moveball(){
@@ -319,49 +261,3 @@ function handleInput(){
 	
 }
 
-window.onkeydown = function(e){
-	var key = e.keyCode;
-	if(key == 87){
-		leftup = true;
-	}else if(key == 83){
-		leftdown = true;
-	}else if(key == 73){
-		rightup = true;
-	}else if(key == 75){
-		rightdown = true;
-	}
-}
-
-window.onkeyup = function(e){
-	var key = e.keyCode;
-	
-	if(key == 87){
-		leftup = false;
-	}else if(key == 83){
-		leftdown = false;
-	}else if(key == 73){
-		rightup = false;
-	}else if(key == 75){
-		rightdown = false;
-	}
-}
-
-function setVertexArray(){
-	vertexArray = null;
-	vertexArray = new Float32Array([
-	 vertices[0],vertices[1],vertices[2],vertices[3],
-	 vertices[4],vertices[5],vertices[6],vertices[7],
-	 vertices[8],vertices[9],vertices[10],vertices[11],
-	 vertices[12],vertices[13],vertices[14],vertices[15],
-	 vertices[16],vertices[17],vertices[18],vertices[19],
-	 vertices[20],vertices[21],vertices[22],vertices[23],
-	 vertices[24],vertices[25],vertices[26],vertices[27],
-	 vertices[28],vertices[29],vertices[30],vertices[31]]);
-	 if(setup){
-	  gl.bindBuffer(gl.ARRAY_BUFFER, vertexbuffer);
-	  
-	  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
-	  
-	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-	 }
-}

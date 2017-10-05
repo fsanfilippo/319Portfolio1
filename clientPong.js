@@ -1,42 +1,15 @@
-//var fps = 30;
-//var fpsInterval, startTime, now, before, elapsed;
-var leftup = false;
-var leftdown = false;
-var rightup = false; 
-var rightdown = false;
-
-var scoreleft = 0;
-var scoreright = 0;
-
-var movespeed = 0.06;
-var ballspeedX = 0.02;
-var ballspeedY = 0.02;
+var fps = 30;
+var fpsInterval, startTime, now, before, elapsed;
+var up = false;
+var down = false;
+var side = '';
+//KeyCodes: w:leftup-87  s:leftdown-83  i:rightup-73  k:rightdown-75
+var score = [0,0];
 
 
 var numPoints = 16;
-
-var vertices = [
--1.0, -0.9,		//0(0,1)		lower boundary
-1.0, -0.9,		//1(2,3)
-
--1.0, 0.9,		//2(4,5)		upper boundary
-1.0, 0.9,		//3(6,7)
-
--0.82, -0.3,	//4(8,9)		left paddle
--0.8, -0.3,		//5(10,11)
--0.8, 0.3,		//6(12,13)
--0.82, 0.3,		//7(14,15)
-
-0.8, -0.3,		//8(16,17)		right paddle
-0.82, -0.3,		//9(18,19)
-0.82, 0.3,		//10(20,21)
-0.8, 0.3,		//11(22,23)
-
--0.03,-0.06,	//12(24,25)		ball
-0.03,-0.06,		//13(26,27)
-0.03,0.06,		//14(28,29)
--0.03,0.06		//15(30,31)
-];
+var vertexArray;
+var vertices = [];
 
 
 var numBorderIndices = 4;
@@ -62,7 +35,12 @@ var ballindexbuffer;
 
 var shader;
 
-
+function main(){
+	
+	
+	
+	setup();
+}
 
 
 
@@ -111,7 +89,7 @@ function draw()
 }
 
 
-function main(){
+function setup(){
 	 setVertexArray();
 	 var canvas = document.getElementById('theCanvas');
 
@@ -202,9 +180,9 @@ function animate(){
 	
 	if(elapsed > fpsInterval){
 		before = now - (elapsed % fpsInterval);
-		handleInput();
-		moveball();
-		checkCollision();
+		sendInput();
+		//moveball();
+		//checkCollision();
 		setScore();
 		setVertexArray();
 		draw();
@@ -213,9 +191,12 @@ function animate(){
 }
 
 function setScore(){
-	document.getElementById('score').innerHTML = scoreleft+"-"+scoreright;
+	document.getElementById('score').innerHTML = score[0]+"-"+score[1];
 }
 
+
+//SHOULD BE ON SERVER SIDE
+/**
 function moveball(){
 	vertices[24]+= ballspeedX;
 	vertices[25]+= ballspeedY;
@@ -290,33 +271,36 @@ function resetBall(){
 	vertices[31] = 0.06;
 	ballspeedX = ballspeedX*(-1);
 }
+**/
 
-function handleInput(){
-	if(leftup == true && vertices[13] < 0.9){
-		vertices[9] = vertices[9] + movespeed;
-		vertices[11] = vertices[11] + movespeed;
-		vertices[13] = vertices[13] + movespeed;
-		vertices[15] = vertices[15] + movespeed;
-	}
-	if(leftdown == true && vertices[9] > -0.9){
-		vertices[9] = vertices[9] - movespeed;
-		vertices[11] = vertices[11] - movespeed;
-		vertices[13] = vertices[13] - movespeed;
-		vertices[15] = vertices[15] - movespeed;
-	}
-	if(rightup == true && vertices[21] < 0.9){
-		vertices[17] = vertices[17] + movespeed;
-		vertices[19] = vertices[19] + movespeed;
-		vertices[21] = vertices[21] + movespeed;
-		vertices[23] = vertices[23] + movespeed;
-	}
-	if(rightdown == true && vertices[17] > -0.9){
-		vertices[17] = vertices[17] - movespeed;
-		vertices[19] = vertices[19] - movespeed;
-		vertices[21] = vertices[21] - movespeed;
-		vertices[23] = vertices[23] - movespeed;
-	}
-	
+connection.onmessage = function (message) {
+      // try to decode json (I assume that each message
+      // from server is json)
+	  var json;
+      try {
+        json = JSON.parse(message.data);
+      } catch (e) {
+        console.log('This doesn\'t look like a valid JSON: ',
+            message.data);
+        return;
+      }
+      // handle incoming message
+	  
+	  //assume a vertices attribute in json object
+	  vertices = json.vertices;
+	  
+	  //assume a score attribute in json object
+	  score = json.score;
+	  
+	  
+    };
+
+});
+
+
+function sendInput(){
+	var inputmsg = JSON.stringify({side:side, up:up, down:down});
+	//connection.send(inputmsg);
 }
 
 window.onkeydown = function(e){
