@@ -94,9 +94,29 @@ class GameState {
   constructor(client1){
     this.client1 = client1;
     this.client2 = undefined;
-    this.vertices = [];//TODO: set this to vertices from game
     this.waitingOnClient = true; //if true, one client is waiting for another client
-    
+    var vertices = [
+      -1.0, -0.9,		//0(0,1)		lower boundary
+      1.0, -0.9,		//1(2,3)
+      
+      -1.0, 0.9,		//2(4,5)		upper boundary
+      1.0, 0.9,		//3(6,7)
+      
+      -0.82, -0.3,	//4(8,9)		left paddle, client1
+      -0.8, -0.3,		//5(10,11)
+      -0.8, 0.3,		//6(12,13)
+      -0.82, 0.3,		//7(14,15)
+      
+      0.8, -0.3,		//8(16,17)		right paddle, client2
+      0.82, -0.3,		//9(18,19)
+      0.82, 0.3,		//10(20,21)
+      0.8, 0.3,		//11(22,23)
+      
+      -0.03,-0.06,	//12(24,25)		ball
+      0.03,-0.06,		//13(26,27)
+      0.03,0.06,		//14(28,29)
+      -0.03,0.06		//15(30,31)
+      ];
   }
 
   //adds the second client
@@ -119,6 +139,35 @@ class GameState {
     //sends the game state to both clients
   }
 
+}
+
+//Game state updating functions
+function handleInput(vertices, ){
+	if(leftup == true && vertices[13] < 0.9){
+		vertices[9] = vertices[9] + movespeed;
+		vertices[11] = vertices[11] + movespeed;
+		vertices[13] = vertices[13] + movespeed;
+		vertices[15] = vertices[15] + movespeed;
+	}
+	if(leftdown == true && vertices[9] > -0.9){
+		vertices[9] = vertices[9] - movespeed;
+		vertices[11] = vertices[11] - movespeed;
+		vertices[13] = vertices[13] - movespeed;
+		vertices[15] = vertices[15] - movespeed;
+	}
+	if(rightup == true && vertices[21] < 0.9){
+		vertices[17] = vertices[17] + movespeed;
+		vertices[19] = vertices[19] + movespeed;
+		vertices[21] = vertices[21] + movespeed;
+		vertices[23] = vertices[23] + movespeed;
+	}
+	if(rightdown == true && vertices[17] > -0.9){
+		vertices[17] = vertices[17] - movespeed;
+		vertices[19] = vertices[19] - movespeed;
+		vertices[21] = vertices[21] - movespeed;
+		vertices[23] = vertices[23] - movespeed;
+	}
+	
 }
 
 app.listen(3000);

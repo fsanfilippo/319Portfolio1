@@ -204,7 +204,7 @@ function animate(){
 	if(elapsed > fpsInterval){
 		before = now - (elapsed % fpsInterval);
 		handleInput(); //moves paddle 
-		//send input
+		//send input()
 		
 		//sever side stuff
 		moveball();
