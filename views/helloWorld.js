@@ -1,4 +1,3 @@
-console.log("Hello World!");
 var connection;
 $(function () {
     // if user is running mozilla then use it's built-in WebSocket
@@ -8,7 +7,7 @@ $(function () {
   
     connection.onopen = function () {
       console.log("Connection Open!");// connection is opened and ready to use
-      initGame();
+      
     };
   
     connection.onerror = function (error) {
@@ -31,7 +30,13 @@ $(function () {
   });
 
 //message Sending function
-function sendMessage(x, y){
-  var msg = JSON.stringify({x:x, y:y});
+function sendMessage(){
+  var msg = "doesn't even matter right now";
   connection.send(msg);
+}
+function sendDir(dir){
+  console.log("UP");
+  console.log(dir);
+  //up is 1, down is 0
+  connection.send(dir);
 }
