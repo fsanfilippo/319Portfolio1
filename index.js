@@ -46,13 +46,6 @@ wsServer.on('request', function(request) {
   });
 });
 
-broadcast = function(message) {
-  var msgObj =JSON.parse(message.utf8Data);
-  var x = msgObj.x;
-  var y = msgObj.y;
-  console.log("( " + x + ", " + y + " )");
-  
-};
 
 function updateGameState(message, client){
   //find game from client

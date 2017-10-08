@@ -209,8 +209,6 @@ function animate(){
 		moveball();
 		checkCollision();
 		setScore();
-		//end of server side stuff
-
 		setVertexArray();
 		draw();
 		
