@@ -1,5 +1,3 @@
-//var fps = 30;
-//var fpsInterval, startTime, now, before, elapsed;
 var leftup = false;
 var leftdown = false;
 var rightup = false; 
@@ -39,124 +37,14 @@ var vertices = [
 ];
 
 
-var numBorderIndices = 4;
-var borderIndices = new Uint16Array([0, 1, 2, 3]);
-
-var numLeftPaddleIndices = 6;
-var leftpaddleIndices = new Uint16Array([4, 5, 6, 4, 6, 7]);
-
-var numRightPaddleIndices = 6;
-var rightpaddleIndices = new Uint16Array([8, 9, 10, 8, 10, 11]);
-
-var numBallIndices = 6;
-var ballIndices = new Uint16Array([12, 13, 14, 12, 14, 15]);
-
-var gl;
-var setup = false;
-
-var vertexbuffer;
-var borderindexbuffer;
-var leftpaddleindexbuffer;
-var rightpaddleindexbuffer;
-var ballindexbuffer;
-
-var shader;
-
-
-
-
-
-
-
-
 function main(){
-	 setVertexArray();
-	 var canvas = document.getElementById('theCanvas');
 
-	  gl = getWebGLContext(canvas, false);
-	  if (!gl) {
-		console.log('Failed to get the rendering context for WebGL');
-		return;
-	  }
 	  
-	  var vshaderSource = document.getElementById('vertexShader').textContent;
-	  var fshaderSource = document.getElementById('fragmentShader').textContent;
-	  if (!initShaders(gl, vshaderSource, fshaderSource)) {
-		console.log('Failed to intialize shaders.');
-		return;
-	  }
+
 	  
-	  shader = gl.program;
-	  gl.useProgram(null);
-	  
-	  // request a handle for a chunk of GPU memory
-	  vertexbuffer = gl.createBuffer();
-	  if (!vertexbuffer) {
-		  console.log('Failed to create the buffer object');
-		  return;
-	  }
-	  
-	  gl.bindBuffer(gl.ARRAY_BUFFER, vertexbuffer);
-	  
-	  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
-	  
-	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-	  
-	  
-	  borderindexbuffer = gl.createBuffer();
-	  if (!borderindexbuffer) {
-		  console.log('Failed to create the buffer object');
-		  return;
-	  }
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, borderindexbuffer);
-	  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, borderIndices, gl.STATIC_DRAW);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  leftpaddleindexbuffer = gl.createBuffer();
-	  if (!leftpaddleindexbuffer) {
-		  console.log('Failed to create the buffer object');
-		  return;
-	  }
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, leftpaddleindexbuffer);
-	  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, leftpaddleIndices, gl.STATIC_DRAW);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  rightpaddleindexbuffer = gl.createBuffer();
-	  if (!rightpaddleindexbuffer) {
-		  console.log('Failed to create the buffer object');
-		  return;
-	  }
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, rightpaddleindexbuffer);
-	  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, rightpaddleIndices, gl.STATIC_DRAW);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  ballindexbuffer = gl.createBuffer();
-	  if (!ballindexbuffer) {
-		  console.log('Failed to create the buffer object');
-		  return;
-	  }
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ballindexbuffer);
-	  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ballIndices, gl.STATIC_DRAW);
-	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	  
-	  
-	  setup = true;
-	  
-	  gl.clearColor(0.0, 0.17, 0.0, 1.0);
-	  
-	  fpsInterval = 1000/fps;
-	  before = Date.now();
-	  startTime = before;
-	  
-	  animate();
 
 }
 
-
-
-function setScore(){
-	
-}
 
 function moveball(){
 	vertices[24]+= ballspeedX;
