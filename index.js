@@ -54,9 +54,9 @@ broadcast = function(message) {
 };
 
 function updateGameState(message, client){
-  //decode JSON object and send to update game
-  //var paddleDir = JSON.parse(message.utf8Data);
+  //find game from client
   var gameObj = clientsGameState.get(client);
+  //update game
   gameObj.game.updateGame(message, gameObj.client);
 }
 
