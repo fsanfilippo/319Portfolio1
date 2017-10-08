@@ -13,6 +13,7 @@ app.get('/',function(req,res){
 });
 
 var gameStates = new Array();
+const movespeed = 0.06; //the move speed of the ball
 var clientsGameState = new Map();
 var WebSocketServer = require('websocket').server;
 var http = require('http');
@@ -56,8 +57,26 @@ broadcast = function(message) {
 function updateGameState(message, client){
   //find game from client
   var gameObj = clientsGameState.get(client);
+  var paddleAndDir = getPaddelAndDir(message, client, gameObj);
   //update game
-  gameObj.game.updateGame(message, gameObj.client);
+  gameObj.game.updateGame(paddleAndDir);
+} 
+
+//converts message and client into a paddle and direction
+//0: leftDown, 1: leftUp, 2: rightDown, 3: rightUp
+function getPaddleAndDir(dir, client, gameObj){
+  if(client == gameObj.client1){
+   switch(dir){
+     case 0:return 0;
+     case 1:return 1;
+   }
+  }
+  else{
+    switch(dir){
+      case 0:return 2;
+      case 1:return 3;
+    }
+  }
 }
 
 addNewClient = function(client){
@@ -95,6 +114,9 @@ class GameState {
     this.client1 = client1;
     this.client2 = undefined;
     this.waitingOnClient = true; //if true, one client is waiting for another client
+    this.ballVelX = 0.02;
+    this.ballVelY = 0.02;
+    this.score = {left: 0, right: 1};
     var vertices = [
       -1.0, -0.9,		//0(0,1)		lower boundary
       1.0, -0.9,		//1(2,3)
@@ -125,13 +147,17 @@ class GameState {
     this.waitingOnClient = false;
   }
 
-  updateGame(paddleDir, clientNum){
+  //paddleDir: 0 is down 1 is up
+  updateGame(paddleAndDir){
     if(this.waitingOnClient){
       console.log("Test: this game is waiting on another client");
       return;
     }
-    this.client1.send("Client 1!");
-    this.client2.send("Hey, you're client 2!");
+    
+    handleInput(this.vertices, paddleAndDir);
+    moveball(this.vertices, this.ballVelX, this.ballVelY);
+    checkCollision(this.vertices, this, paddleAndDir);
+    sendGameState();
     //call update the game
   }
 
@@ -141,33 +167,113 @@ class GameState {
 
 }
 
-//Game state updating functions
-function handleInput(vertices, ){
-	if(leftup == true && vertices[13] < 0.9){
+
+
+/**
+ * 
+ * Game updating functions shared by all game states
+ */
+function handleInput(vertices, paddleMov){
+	if(paddleMov === 0 && vertices[13] < 0.9){
 		vertices[9] = vertices[9] + movespeed;
 		vertices[11] = vertices[11] + movespeed;
 		vertices[13] = vertices[13] + movespeed;
 		vertices[15] = vertices[15] + movespeed;
 	}
-	if(leftdown == true && vertices[9] > -0.9){
+	else if(paddleMov === 1 && vertices[9] > -0.9){
 		vertices[9] = vertices[9] - movespeed;
 		vertices[11] = vertices[11] - movespeed;
 		vertices[13] = vertices[13] - movespeed;
 		vertices[15] = vertices[15] - movespeed;
 	}
-	if(rightup == true && vertices[21] < 0.9){
+	else if(paddleMov === 2 && vertices[21] < 0.9){
 		vertices[17] = vertices[17] + movespeed;
 		vertices[19] = vertices[19] + movespeed;
 		vertices[21] = vertices[21] + movespeed;
 		vertices[23] = vertices[23] + movespeed;
 	}
-	if(rightdown == true && vertices[17] > -0.9){
+	else if(paddleMov === 3 && vertices[17] > -0.9){
 		vertices[17] = vertices[17] - movespeed;
 		vertices[19] = vertices[19] - movespeed;
 		vertices[21] = vertices[21] - movespeed;
 		vertices[23] = vertices[23] - movespeed;
 	}
 	
+}
+
+function moveball(vertices, ballVelX, ballVelY){
+	vertices[24]+= ballVelX;
+	vertices[25]+= ballVelY;
+	vertices[26]+= ballVelX;
+	vertices[27]+= ballVelY;
+	vertices[28]+= ballVelX;
+	vertices[29]+= ballVelY;
+	vertices[30]+= ballVelX;
+	vertices[31]+= ballVelY;
+}
+
+function checkCollision(vertices, game, paddleMov){
+	if(vertices[31] > 0.9 || vertices[25] < -0.9){
+		game.ballVelY = game.ballVelY*-1.0;
+	}
+	
+	if((vertices[24] > vertices[8] && vertices[24] < vertices[10]) ||
+		(vertices[30] > vertices[8] && vertices[30] < vertices[10])){
+		if((vertices[29] > vertices[11] && vertices[29] < vertices[13]) ||
+			(vertices[27] > vertices[11] && vertices[27] < vertices[13])){
+				
+				if(paddleMov === 1){
+					
+					game.ballVelY = game.ballVelY*(-1.5);
+					game.ballVelX = game.ballVelX*(-1.0);
+				} else if(paddleMov === 0){
+					
+					game.ballVelY = game.ballVelY*(-0.5);
+					game.ballVelX =game.ballVelX*(-1.0);
+				} else{
+					game.ballVelX = game.ballVelX*-1.0;
+				}
+		}
+	}
+	
+	if((vertices[26] > vertices[16] && vertices[26] < vertices[18]) ||
+		(vertices[28] > vertices[16] && vertices[28] < vertices[18])){
+		if((vertices[29] > vertices[17] && vertices[29] < vertices[23]) ||
+			(vertices[27] > vertices[17] && vertices[27] < vertices[23])){
+				if(paddleMov === 3){
+					
+					game.ballVelY = game.ballVelY*(-1.5);
+					game.ballVelX = game.ballVelX*(-1.0);
+				} else if(paddleMov === 2){
+					
+					game.ballVelY = game.ballVelY*(-0.5);
+					game.ballVelX = game.ballVelX*(-1.0);
+				} else{
+					game.ballVelX = game.ballVelX*-1.0;
+				}
+		}
+	}
+	
+	if(vertices[24] < -0.99){
+		game.score.right += 1;
+		resetBall(vertices, game);
+	}
+	else if(vertices[26] > 0.99){
+		game.score.right += 1;
+		resetBall(vertices, game);
+	}
+}
+
+function resetBall(vertices, game){
+	vertices[24] = -0.03;
+	vertices[25] = -0.06;
+	vertices[26] = 0.03;
+	vertices[27] = -0.06;
+	vertices[28] = 0.03;
+	vertices[29] = 0.06;
+	vertices[30] = -0.03;
+	vertices[31] = 0.06;
+	game.ballVelX = game.ballVelX*(-1);
 }
 
 app.listen(3000);
