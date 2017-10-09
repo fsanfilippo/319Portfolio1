@@ -201,16 +201,13 @@ function animate(){
 	elapsed = now - before;
 	
 	if(elapsed > fpsInterval){
-		before = now - (elapsed % fpsInterval);
-		handleInput(); //moves paddle 
-		//send input
+		before = now - (elapsed % fpsInterval); 
 		
 		//sever side stuff
+		handleInput();
 		moveball();
 		checkCollision();
 		setScore();
-		//end of server side stuff
-
 		setVertexArray();
 		draw();
 		
