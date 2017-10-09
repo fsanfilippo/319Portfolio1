@@ -9,7 +9,7 @@ app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); /
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 
 app.get('/',function(req,res){
-  res.sendFile(path.join(__dirname + '/views/helloWord.html'));
+  res.sendFile(path.join(__dirname + '/views/pong.html'));
 });
 
 var gameStates = new Array();
@@ -50,7 +50,7 @@ wsServer.on('request', function(request) {
 function updateGameState(message, client){
   //find game from client
   var gameObj = clientsGameState.get(client);
-  var paddleAndDir = getPaddelAndDir(message, client, gameObj);
+  var paddleAndDir = getPaddleAndDir(message, client, gameObj);
   //update game
   gameObj.game.updateGame(paddleAndDir);
 } 
@@ -110,7 +110,7 @@ class GameState {
     this.ballVelX = 0.02;
     this.ballVelY = 0.02;
     this.score = {left: 0, right: 1};
-    var vertices = [
+    this.vertices = [
       -1.0, -0.9,		//0(0,1)		lower boundary
       1.0, -0.9,		//1(2,3)
       
@@ -150,12 +150,14 @@ class GameState {
     handleInput(this.vertices, paddleAndDir);
     moveball(this.vertices, this.ballVelX, this.ballVelY);
     checkCollision(this.vertices, this, paddleAndDir);
-    sendGameState();
+    this.sendGameState();
     //call update the game
   }
 
   sendGameState(){
-    //sends the game state to both clients
+    var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});
+    this.client1.send(gameStateObj);
+    this.client2.send(gameStateObj);//sends the game state to both clients
   }
 
 }

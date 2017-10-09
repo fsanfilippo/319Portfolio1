@@ -1,8 +1,11 @@
 var fps = 30;
 var fpsInterval, startTime, now, before, elapsed;
-var up = false;
-var down = false;
+var leftup = false;
+var leftdown = false;
+var rightup = false; 
+var rightdown = false;
 var side = '';
+var connection; //WebSocket connection
 //KeyCodes: w:leftup-87  s:leftdown-83  i:rightup-73  k:rightdown-75
 var score = [0,0];
 
@@ -25,7 +28,7 @@ var numBallIndices = 6;
 var ballIndices = new Uint16Array([12, 13, 14, 12, 14, 15]);
 
 var gl;
-var setup = false;
+var isSetup = false;
 
 var vertexbuffer;
 var borderindexbuffer;
@@ -36,8 +39,6 @@ var ballindexbuffer;
 var shader;
 
 function main(){
-	
-	
 	
 	setup();
 }
@@ -89,7 +90,52 @@ function draw()
 }
 
 
-function setup(){
+var setup = function(){
+
+	/**
+	 * WebSocket Setup
+	 */
+
+	window.WebSocket = window.WebSocket || window.MozWebSocket;
+	
+	connection = new WebSocket('ws://127.0.0.1:1337');
+
+	connection.onopen = function () {
+		console.log("Connection Open!");// connection is opened and ready to use
+	};
+
+	connection.onerror = function (error) {
+		console.log("OH NO! something went wrong!");// an error occurred when sending/receiving data
+	};
+
+	connection.onclose = function(){
+		console.log("why is this closing?");
+	}
+
+	connection.onmessage = function (message) {
+		// try to decode json (I assume that each message
+		// from server is json)
+		var json;
+		try {
+		  json = JSON.parse(message.data);
+		} catch (e) {
+		  console.log('This doesn\'t look like a valid JSON: ',
+			  message.data);
+		  return;
+		}
+		// handle incoming message
+		
+		//assume a vertices attribute in json object
+		vertices = json.vertices;
+		
+		//assume a score attribute in json object
+		score = json.score;
+		
+		
+	};
+	
+	  //end of webSocket connection setup
+
 	 setVertexArray();
 	 var canvas = document.getElementById('theCanvas');
 
@@ -160,7 +206,7 @@ function setup(){
 	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	  
 	  
-	  setup = true;
+	  isSetup = true;
 	  
 	  gl.clearColor(0.0, 0.17, 0.0, 1.0);
 	  
@@ -273,34 +319,11 @@ function resetBall(){
 }
 **/
 
-connection.onmessage = function (message) {
-      // try to decode json (I assume that each message
-      // from server is json)
-	  var json;
-      try {
-        json = JSON.parse(message.data);
-      } catch (e) {
-        console.log('This doesn\'t look like a valid JSON: ',
-            message.data);
-        return;
-      }
-      // handle incoming message
-	  
-	  //assume a vertices attribute in json object
-	  vertices = json.vertices;
-	  
-	  //assume a score attribute in json object
-	  score = json.score;
-	  
-	  
-    };
-
-});
-
-
 function sendInput(){
-	var inputmsg = JSON.stringify({side:side, up:up, down:down});
-	//connection.send(inputmsg);
+	if(leftup || leftdown){
+		var inputmsg = leftup ? 1 : 0;
+		connection.send(inputmsg);
+	}
 }
 
 window.onkeydown = function(e){
@@ -341,7 +364,7 @@ function setVertexArray(){
 	 vertices[20],vertices[21],vertices[22],vertices[23],
 	 vertices[24],vertices[25],vertices[26],vertices[27],
 	 vertices[28],vertices[29],vertices[30],vertices[31]]);
-	 if(setup){
+	 if(isSetup){
 	  gl.bindBuffer(gl.ARRAY_BUFFER, vertexbuffer);
 	  
 	  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
@@ -349,3 +372,4 @@ function setVertexArray(){
 	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	 }
 }
+
