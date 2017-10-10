@@ -8,6 +8,8 @@ var side = '';
 var connection; //WebSocket connection
 //KeyCodes: w:leftup-87  s:leftdown-83  i:rightup-73  k:rightdown-75
 var score = [0,0];
+var playerNum = undefined; //determines if you are player1 or player2
+var assingedPlayerNum = false; //if the game isn't started you will be recieveing player assignment
 
 
 var numPoints = 16;
@@ -98,7 +100,7 @@ var setup = function(){
 
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	connection = new WebSocket('ws://127.0.0.1:1337');
+	connection = new WebSocket('ws://192.168.1.6:1337');
 
 	connection.onopen = function () {
 		console.log("Connection Open!");// connection is opened and ready to use
@@ -115,22 +117,29 @@ var setup = function(){
 	connection.onmessage = function (message) {
 		// try to decode json (I assume that each message
 		// from server is json)
-		var json;
-		try {
-		  json = JSON.parse(message.data);
-		} catch (e) {
-		  console.log('This doesn\'t look like a valid JSON: ',
-			  message.data);
-		  return;
+		if(!assingedPlayerNum){
+			console.log(message.data);
+			playerNum = (message.data === "true") ? 1 : 2;
+			assingedPlayerNum = true;
 		}
-		// handle incoming message
-		
-		//assume a vertices attribute in json object
-		vertices = json.vertices;
-		
-		//assume a score attribute in json object
-		score = json.score;
-		
+		else{
+			var json;
+			try {
+			json = JSON.parse(message.data);
+			} catch (e) {
+			console.log('This doesn\'t look like a valid JSON: ',
+				message.data);
+			return;
+			}
+			// handle incoming message
+			
+			//assume a vertices attribute in json object
+			vertices = json.vertices;
+			
+			//assume a score attribute in json object
+			score[0] = json.score.left;
+			score[1] = json.score.right;
+		}
 		
 	};
 	
@@ -226,9 +235,7 @@ function animate(){
 	
 	if(elapsed > fpsInterval){
 		before = now - (elapsed % fpsInterval);
-		sendInput();
-		//moveball();
-		//checkCollision();
+		
 		setScore();
 		setVertexArray();
 		draw();
@@ -240,90 +247,18 @@ function setScore(){
 	document.getElementById('score').innerHTML = score[0]+"-"+score[1];
 }
 
-
-//SHOULD BE ON SERVER SIDE
-/**
-function moveball(){
-	vertices[24]+= ballspeedX;
-	vertices[25]+= ballspeedY;
-	vertices[26]+= ballspeedX;
-	vertices[27]+= ballspeedY;
-	vertices[28]+= ballspeedX;
-	vertices[29]+= ballspeedY;
-	vertices[30]+= ballspeedX;
-	vertices[31]+= ballspeedY;
-}
-
-function checkCollision(){
-	if(vertices[31] > 0.9 || vertices[25] < -0.9){
-		ballspeedY = ballspeedY*-1.0;
-	}
-	
-	if((vertices[24] > vertices[8] && vertices[24] < vertices[10]) ||
-		(vertices[30] > vertices[8] && vertices[30] < vertices[10])){
-		if((vertices[29] > vertices[11] && vertices[29] < vertices[13]) ||
-			(vertices[27] > vertices[11] && vertices[27] < vertices[13])){
-				
-				if(leftup){
-					
-					ballspeedY = ballspeedY*(-1.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else if(leftdown){
-					
-					ballspeedY = ballspeedY*(-0.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else{
-					ballspeedX = ballspeedX*-1.0;
-				}
-		}
-	}
-	
-	if((vertices[26] > vertices[16] && vertices[26] < vertices[18]) ||
-		(vertices[28] > vertices[16] && vertices[28] < vertices[18])){
-		if((vertices[29] > vertices[17] && vertices[29] < vertices[23]) ||
-			(vertices[27] > vertices[17] && vertices[27] < vertices[23])){
-				if(leftup){
-					
-					ballspeedY = ballspeedY*(-1.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else if(leftdown){
-					
-					ballspeedY = ballspeedY*(-0.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else{
-					ballspeedX = ballspeedX*-1.0;
-				}
-		}
-	}
-	
-	if(vertices[24] < -0.99){
-		scoreright = scoreright + 1;
-		resetBall();
-	}
-	if(vertices[26] > 0.99){
-		scoreleft = scoreleft + 1;
-		resetBall();
-	}
-}
-
-function resetBall(){
-	vertices[24] = -0.03;
-	vertices[25] = -0.06;
-	vertices[26] = 0.03;
-	vertices[27] = -0.06;
-	vertices[28] = 0.03;
-	vertices[29] = 0.06;
-	vertices[30] = -0.03;
-	vertices[31] = 0.06;
-	ballspeedX = ballspeedX*(-1);
-}
-**/
-
 function sendInput(){
-	if(leftup || leftdown){
-		var inputmsg = leftup ? 1 : 0;
-		connection.send(inputmsg);
+	var paddleDir = undefined;
+	
+	if(leftup){
+		paddleDir = "1";
 	}
+	else if(leftdown){
+		paddleDir = "0";
+	}
+	
+	var sendObj = JSON.stringify({paddle: paddleDir, player: playerNum});
+	connection.send(sendObj);
 }
 
 window.onkeydown = function(e){
@@ -337,6 +272,7 @@ window.onkeydown = function(e){
 	}else if(key == 75){
 		rightdown = true;
 	}
+	sendInput();
 }
 
 window.onkeyup = function(e){
@@ -351,6 +287,7 @@ window.onkeyup = function(e){
 	}else if(key == 75){
 		rightdown = false;
 	}
+	sendInput();
 }
 
 function setVertexArray(){
