@@ -2,8 +2,7 @@ var fps = 30;
 var fpsInterval, startTime, now, before, elapsed;
 var leftup = false;
 var leftdown = false;
-var rightup = false; 
-var rightdown = false;
+
 var side = '';
 var connection; //WebSocket connection
 //KeyCodes: w:leftup-87  s:leftdown-83  i:rightup-73  k:rightdown-75
@@ -100,7 +99,7 @@ var setup = function(){
 
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	connection = new WebSocket('ws://192.168.1.6:1337');
+	connection = new WebSocket('ws://10.26.5.52:1337');
 
 	connection.onopen = function () {
 		console.log("Connection Open!");// connection is opened and ready to use

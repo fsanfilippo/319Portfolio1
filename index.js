@@ -12,6 +12,7 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/pong.html'));
 });
 
+const interval = 1000/60;
 var gameStates = new Array();
 const movespeed = 0.06; //the move speed of the ball
 var clientGameStates = new Map();
@@ -133,7 +134,7 @@ class GameState {
         game.updateGame();
       };
       
-      setInterval(updateTheGame, 30);
+      setInterval(updateTheGame, interval);
       
   }
   //paddleDir: 0 is down 1 is up
