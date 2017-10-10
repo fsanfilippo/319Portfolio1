@@ -128,7 +128,7 @@ class GameState {
       ];
       
 
-      resetBall(this.vertices, this);
+      //resetBall(this.vertices, this);
       var game = this;
       var updateTheGame = function(){
         game.updateGame();

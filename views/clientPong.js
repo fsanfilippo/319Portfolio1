@@ -5,7 +5,7 @@ var leftdown = false;
 
 var side = '';
 var connection; //WebSocket connection
-//KeyCodes: w:leftup-87  s:leftdown-83  i:rightup-73  k:rightdown-75
+//KeyCodes: w:leftup-87  s:leftdown-83
 var score = [0,0];
 var playerNum = undefined; //determines if you are player1 or player2
 var assingedPlayerNum = false; //if the game isn't started you will be recieveing player assignment
@@ -99,7 +99,7 @@ var setup = function(){
 
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	connection = new WebSocket('ws://10.26.5.52:1337');
+	connection = new WebSocket('ws://10.26.5.52:1337'); //TODO: change when we put on server
 
 	connection.onopen = function () {
 		console.log("Connection Open!");// connection is opened and ready to use
@@ -130,7 +130,6 @@ var setup = function(){
 				message.data);
 			return;
 			}
-			// handle incoming message
 			
 			//assume a vertices attribute in json object
 			vertices = json.vertices;
@@ -140,10 +139,8 @@ var setup = function(){
 			score[1] = json.score.right;
 		}
 		
-	};
+	};//end of webSocket connection setup
 	
-	  //end of webSocket connection setup
-
 	 setVertexArray();
 	 var canvas = document.getElementById('theCanvas');
 
@@ -266,25 +263,16 @@ window.onkeydown = function(e){
 		leftup = true;
 	}else if(key == 83){
 		leftdown = true;
-	}else if(key == 73){
-		rightup = true;
-	}else if(key == 75){
-		rightdown = true;
 	}
 	sendInput();
 }
 
 window.onkeyup = function(e){
 	var key = e.keyCode;
-	
 	if(key == 87){
 		leftup = false;
 	}else if(key == 83){
 		leftdown = false;
-	}else if(key == 73){
-		rightup = false;
-	}else if(key == 75){
-		rightdown = false;
 	}
 	sendInput();
 }
