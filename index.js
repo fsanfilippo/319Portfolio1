@@ -9,12 +9,13 @@ app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); /
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
 
 app.get('/',function(req,res){
-  res.sendFile(path.join(__dirname + '/views/helloWord.html'));
+  res.sendFile(path.join(__dirname + '/views/pong.html'));
 });
 
+const interval = 1000/60;
 var gameStates = new Array();
 const movespeed = 0.06; //the move speed of the ball
-var clientsGameState = new Map();
+var clientGameStates = new Map();
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 
@@ -49,28 +50,16 @@ wsServer.on('request', function(request) {
 
 function updateGameState(message, client){
   //find game from client
-  var gameObj = clientsGameState.get(client);
-  var paddleAndDir = getPaddelAndDir(message, client, gameObj);
-  //update game
-  gameObj.game.updateGame(paddleAndDir);
+  var gameObj = clientGameStates.get(client);
+  var obj = JSON.parse(message.utf8Data);
+
+  switch(obj.player){
+    case 1: gameObj.game.player1PaddleDir = obj.paddle; break;
+    case 2: gameObj.game.player2PaddleDir = obj.paddle; break;
+  }
+  
 } 
 
-//converts message and client into a paddle and direction
-//0: leftDown, 1: leftUp, 2: rightDown, 3: rightUp
-function getPaddleAndDir(dir, client, gameObj){
-  if(client == gameObj.client1){
-   switch(dir){
-     case 0:return 0;
-     case 1:return 1;
-   }
-  }
-  else{
-    switch(dir){
-      case 0:return 2;
-      case 1:return 3;
-    }
-  }
-}
 
 addNewClient = function(client){
     //check for client that needs pair
@@ -80,7 +69,8 @@ addNewClient = function(client){
     if(gameStates.length == 0){
       let game = new GameState(client);
       gameStates.push(game);
-      clientsGameState.set(client,{game: game, client: 1});
+      clientGameStates.set(client,{game: game, client: 1});
+      client.send("true");//indicate they are the first player
       return;
     }
 
@@ -89,13 +79,15 @@ addNewClient = function(client){
     //add second client
     if(gameStateCheck.waitingOnClient){
         gameStateCheck.addClient2(client);
-        clientsGameState.set(client, {game: gameStateCheck, client: 2});
+        clientGameStates.set(client, {game: gameStateCheck, client: 2});
+        client.send("false"); //indicated they are player 2
     }
     //add new game
     else{
       let game = new GameState(client);
       gameStates.push(game);
-      clientsGameState.set(client, {game: game, client: 1});
+      clientGameStates.set(client, {game: game, client: 1});
+      client.send("true"); //indicate they are player 1
     }
     
     
@@ -109,8 +101,10 @@ class GameState {
     this.waitingOnClient = true; //if true, one client is waiting for another client
     this.ballVelX = 0.02;
     this.ballVelY = 0.02;
-    this.score = {left: 0, right: 1};
-    var vertices = [
+    this.player1PaddleDir = undefined; //0 down, 1 up, undefined not moving
+    this.player2PaddleDir = undefined; 
+    this.score = {left: 0, right: 0};
+    this.vertices = [
       -1.0, -0.9,		//0(0,1)		lower boundary
       1.0, -0.9,		//1(2,3)
       
@@ -132,7 +126,33 @@ class GameState {
       0.03,0.06,		//14(28,29)
       -0.03,0.06		//15(30,31)
       ];
+      
+
+      //resetBall(this.vertices, this);
+      var game = this;
+      var updateTheGame = function(){
+        game.updateGame();
+      };
+      
+      setInterval(updateTheGame, interval);
+      
   }
+  //paddleDir: 0 is down 1 is up
+  updateGame(){
+    if(this.waitingOnClient){
+      return;
+    }
+    
+    var paddle1 = this.player1PaddleDir;
+    var paddle2 = this.player2PaddleDir;
+    
+    handleInput(this.vertices, paddle1, paddle2);
+    moveball(this.vertices, this.ballVelX, this.ballVelY);
+    checkCollision(this.vertices, this, paddle1, paddle2);
+    this.sendGameState();
+    //call update the game
+  }
+  
 
   //adds the second client
   addClient2(client){
@@ -140,25 +160,13 @@ class GameState {
     this.waitingOnClient = false;
   }
 
-  //paddleDir: 0 is down 1 is up
-  updateGame(paddleAndDir){
-    if(this.waitingOnClient){
-      console.log("Test: this game is waiting on another client");
-      return;
-    }
-    
-    handleInput(this.vertices, paddleAndDir);
-    moveball(this.vertices, this.ballVelX, this.ballVelY);
-    checkCollision(this.vertices, this, paddleAndDir);
-    sendGameState();
-    //call update the game
-  }
-
   sendGameState(){
-    //sends the game state to both clients
+    var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});
+    this.client1.send(gameStateObj);
+    this.client2.send(gameStateObj);//sends the game state to both clients
   }
 
-}
+} //end of game class
 
 
 
@@ -166,26 +174,27 @@ class GameState {
  * 
  * Game updating functions shared by all game states
  */
-function handleInput(vertices, paddleMov){
-	if(paddleMov === 0 && vertices[13] < 0.9){
+function handleInput(vertices, paddle1, paddle2){
+  
+	if(paddle1 === "1" && vertices[13] < 0.9){
 		vertices[9] = vertices[9] + movespeed;
 		vertices[11] = vertices[11] + movespeed;
 		vertices[13] = vertices[13] + movespeed;
 		vertices[15] = vertices[15] + movespeed;
 	}
-	else if(paddleMov === 1 && vertices[9] > -0.9){
+	else if(paddle1 === "0" && vertices[9] > -0.9){
 		vertices[9] = vertices[9] - movespeed;
 		vertices[11] = vertices[11] - movespeed;
 		vertices[13] = vertices[13] - movespeed;
 		vertices[15] = vertices[15] - movespeed;
 	}
-	else if(paddleMov === 2 && vertices[21] < 0.9){
+	else if(paddle2 === "1" && vertices[21] < 0.9){
 		vertices[17] = vertices[17] + movespeed;
 		vertices[19] = vertices[19] + movespeed;
 		vertices[21] = vertices[21] + movespeed;
 		vertices[23] = vertices[23] + movespeed;
 	}
-	else if(paddleMov === 3 && vertices[17] > -0.9){
+	else if(paddle2 === "0" && vertices[17] > -0.9){
 		vertices[17] = vertices[17] - movespeed;
 		vertices[19] = vertices[19] - movespeed;
 		vertices[21] = vertices[21] - movespeed;
@@ -205,7 +214,7 @@ function moveball(vertices, ballVelX, ballVelY){
 	vertices[31]+= ballVelY;
 }
 
-function checkCollision(vertices, game, paddleMov){
+function checkCollision(vertices, game, paddle1, paddle2){
 	if(vertices[31] > 0.9 || vertices[25] < -0.9){
 		game.ballVelY = game.ballVelY*-1.0;
 	}
@@ -215,11 +224,11 @@ function checkCollision(vertices, game, paddleMov){
 		if((vertices[29] > vertices[11] && vertices[29] < vertices[13]) ||
 			(vertices[27] > vertices[11] && vertices[27] < vertices[13])){
 				
-				if(paddleMov === 1){
+				if(paddle1 === "1"){
 					
 					game.ballVelY = game.ballVelY*(-1.5);
 					game.ballVelX = game.ballVelX*(-1.0);
-				} else if(paddleMov === 0){
+				} else if(paddle1 === "0"){
 					
 					game.ballVelY = game.ballVelY*(-0.5);
 					game.ballVelX =game.ballVelX*(-1.0);
@@ -233,11 +242,11 @@ function checkCollision(vertices, game, paddleMov){
 		(vertices[28] > vertices[16] && vertices[28] < vertices[18])){
 		if((vertices[29] > vertices[17] && vertices[29] < vertices[23]) ||
 			(vertices[27] > vertices[17] && vertices[27] < vertices[23])){
-				if(paddleMov === 3){
+				if(paddle2 === '1"'){
 					
 					game.ballVelY = game.ballVelY*(-1.5);
 					game.ballVelX = game.ballVelX*(-1.0);
-				} else if(paddleMov === 2){
+				} else if(paddle2 === "0"){
 					
 					game.ballVelY = game.ballVelY*(-0.5);
 					game.ballVelX = game.ballVelX*(-1.0);
@@ -252,7 +261,7 @@ function checkCollision(vertices, game, paddleMov){
 		resetBall(vertices, game);
 	}
 	else if(vertices[26] > 0.99){
-		game.score.right += 1;
+		game.score.left += 1;
 		resetBall(vertices, game);
 	}
 }

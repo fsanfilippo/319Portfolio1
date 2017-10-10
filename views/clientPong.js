@@ -1,42 +1,19 @@
-//var fps = 30;
-//var fpsInterval, startTime, now, before, elapsed;
+var fps = 30;
+var fpsInterval, startTime, now, before, elapsed;
 var leftup = false;
 var leftdown = false;
-var rightup = false; 
-var rightdown = false;
 
-var scoreleft = 0;
-var scoreright = 0;
-
-var movespeed = 0.06;
-var ballspeedX = 0.02;
-var ballspeedY = 0.02;
+var side = '';
+var connection; //WebSocket connection
+//KeyCodes: w:leftup-87  s:leftdown-83
+var score = [0,0];
+var playerNum = undefined; //determines if you are player1 or player2
+var assingedPlayerNum = false; //if the game isn't started you will be recieveing player assignment
 
 
 var numPoints = 16;
-
-var vertices = [
--1.0, -0.9,		//0(0,1)		lower boundary
-1.0, -0.9,		//1(2,3)
-
--1.0, 0.9,		//2(4,5)		upper boundary
-1.0, 0.9,		//3(6,7)
-
--0.82, -0.3,	//4(8,9)		left paddle
--0.8, -0.3,		//5(10,11)
--0.8, 0.3,		//6(12,13)
--0.82, 0.3,		//7(14,15)
-
-0.8, -0.3,		//8(16,17)		right paddle
-0.82, -0.3,		//9(18,19)
-0.82, 0.3,		//10(20,21)
-0.8, 0.3,		//11(22,23)
-
--0.03,-0.06,	//12(24,25)		ball
-0.03,-0.06,		//13(26,27)
-0.03,0.06,		//14(28,29)
--0.03,0.06		//15(30,31)
-];
+var vertexArray;
+var vertices = [];
 
 
 var numBorderIndices = 4;
@@ -52,7 +29,7 @@ var numBallIndices = 6;
 var ballIndices = new Uint16Array([12, 13, 14, 12, 14, 15]);
 
 var gl;
-var setup = false;
+var isSetup = false;
 
 var vertexbuffer;
 var borderindexbuffer;
@@ -62,7 +39,10 @@ var ballindexbuffer;
 
 var shader;
 
-
+function main(){
+	
+	setup();
+}
 
 
 
@@ -111,7 +91,56 @@ function draw()
 }
 
 
-function main(){
+var setup = function(){
+
+	/**
+	 * WebSocket Setup
+	 */
+
+	window.WebSocket = window.WebSocket || window.MozWebSocket;
+	
+	connection = new WebSocket('ws://10.26.5.52:1337'); //TODO: change when we put on server
+
+	connection.onopen = function () {
+		console.log("Connection Open!");// connection is opened and ready to use
+	};
+
+	connection.onerror = function (error) {
+		console.log("OH NO! something went wrong!");// an error occurred when sending/receiving data
+	};
+
+	connection.onclose = function(){
+		console.log("why is this closing?");
+	}
+
+	connection.onmessage = function (message) {
+		// try to decode json (I assume that each message
+		// from server is json)
+		if(!assingedPlayerNum){
+			console.log(message.data);
+			playerNum = (message.data === "true") ? 1 : 2;
+			assingedPlayerNum = true;
+		}
+		else{
+			var json;
+			try {
+			json = JSON.parse(message.data);
+			} catch (e) {
+			console.log('This doesn\'t look like a valid JSON: ',
+				message.data);
+			return;
+			}
+			
+			//assume a vertices attribute in json object
+			vertices = json.vertices;
+			
+			//assume a score attribute in json object
+			score[0] = json.score.left;
+			score[1] = json.score.right;
+		}
+		
+	};//end of webSocket connection setup
+	
 	 setVertexArray();
 	 var canvas = document.getElementById('theCanvas');
 
@@ -182,7 +211,7 @@ function main(){
 	  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	  
 	  
-	  setup = true;
+	  isSetup = true;
 	  
 	  gl.clearColor(0.0, 0.17, 0.0, 1.0);
 	  
@@ -201,12 +230,8 @@ function animate(){
 	elapsed = now - before;
 	
 	if(elapsed > fpsInterval){
-		before = now - (elapsed % fpsInterval); 
+		before = now - (elapsed % fpsInterval);
 		
-		//sever side stuff
-		handleInput();
-		moveball();
-		checkCollision();
 		setScore();
 		setVertexArray();
 		draw();
@@ -215,110 +240,21 @@ function animate(){
 }
 
 function setScore(){
-	document.getElementById('score').innerHTML = scoreleft+"-"+scoreright;
+	document.getElementById('score').innerHTML = score[0]+"-"+score[1];
 }
 
-function moveball(){
-	vertices[24]+= ballspeedX;
-	vertices[25]+= ballspeedY;
-	vertices[26]+= ballspeedX;
-	vertices[27]+= ballspeedY;
-	vertices[28]+= ballspeedX;
-	vertices[29]+= ballspeedY;
-	vertices[30]+= ballspeedX;
-	vertices[31]+= ballspeedY;
-}
-
-function checkCollision(){
-	if(vertices[31] > 0.9 || vertices[25] < -0.9){
-		ballspeedY = ballspeedY*-1.0;
+function sendInput(){
+	var paddleDir = undefined;
+	
+	if(leftup){
+		paddleDir = "1";
+	}
+	else if(leftdown){
+		paddleDir = "0";
 	}
 	
-	if((vertices[24] > vertices[8] && vertices[24] < vertices[10]) ||
-		(vertices[30] > vertices[8] && vertices[30] < vertices[10])){
-		if((vertices[29] > vertices[11] && vertices[29] < vertices[13]) ||
-			(vertices[27] > vertices[11] && vertices[27] < vertices[13])){
-				
-				if(leftup){
-					
-					ballspeedY = ballspeedY*(-1.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else if(leftdown){
-					
-					ballspeedY = ballspeedY*(-0.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else{
-					ballspeedX = ballspeedX*-1.0;
-				}
-		}
-	}
-	
-	if((vertices[26] > vertices[16] && vertices[26] < vertices[18]) ||
-		(vertices[28] > vertices[16] && vertices[28] < vertices[18])){
-		if((vertices[29] > vertices[17] && vertices[29] < vertices[23]) ||
-			(vertices[27] > vertices[17] && vertices[27] < vertices[23])){
-				if(leftup){
-					
-					ballspeedY = ballspeedY*(-1.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else if(leftdown){
-					
-					ballspeedY = ballspeedY*(-0.5);
-					ballspeedX = ballspeedX*(-1.0);
-				} else{
-					ballspeedX = ballspeedX*-1.0;
-				}
-		}
-	}
-	
-	if(vertices[24] < -0.99){
-		scoreright = scoreright + 1;
-		resetBall();
-	}
-	if(vertices[26] > 0.99){
-		scoreleft = scoreleft + 1;
-		resetBall();
-	}
-}
-
-function resetBall(){
-	vertices[24] = -0.03;
-	vertices[25] = -0.06;
-	vertices[26] = 0.03;
-	vertices[27] = -0.06;
-	vertices[28] = 0.03;
-	vertices[29] = 0.06;
-	vertices[30] = -0.03;
-	vertices[31] = 0.06;
-	ballspeedX = ballspeedX*(-1);
-}
-
-function handleInput(){
-	if(leftup == true && vertices[13] < 0.9){
-		vertices[9] = vertices[9] + movespeed;
-		vertices[11] = vertices[11] + movespeed;
-		vertices[13] = vertices[13] + movespeed;
-		vertices[15] = vertices[15] + movespeed;
-	}
-	if(leftdown == true && vertices[9] > -0.9){
-		vertices[9] = vertices[9] - movespeed;
-		vertices[11] = vertices[11] - movespeed;
-		vertices[13] = vertices[13] - movespeed;
-		vertices[15] = vertices[15] - movespeed;
-	}
-	if(rightup == true && vertices[21] < 0.9){
-		vertices[17] = vertices[17] + movespeed;
-		vertices[19] = vertices[19] + movespeed;
-		vertices[21] = vertices[21] + movespeed;
-		vertices[23] = vertices[23] + movespeed;
-	}
-	if(rightdown == true && vertices[17] > -0.9){
-		vertices[17] = vertices[17] - movespeed;
-		vertices[19] = vertices[19] - movespeed;
-		vertices[21] = vertices[21] - movespeed;
-		vertices[23] = vertices[23] - movespeed;
-	}
-	
+	var sendObj = JSON.stringify({paddle: paddleDir, player: playerNum});
+	connection.send(sendObj);
 }
 
 window.onkeydown = function(e){
@@ -327,25 +263,18 @@ window.onkeydown = function(e){
 		leftup = true;
 	}else if(key == 83){
 		leftdown = true;
-	}else if(key == 73){
-		rightup = true;
-	}else if(key == 75){
-		rightdown = true;
 	}
+	sendInput();
 }
 
 window.onkeyup = function(e){
 	var key = e.keyCode;
-	
 	if(key == 87){
 		leftup = false;
 	}else if(key == 83){
 		leftdown = false;
-	}else if(key == 73){
-		rightup = false;
-	}else if(key == 75){
-		rightdown = false;
 	}
+	sendInput();
 }
 
 function setVertexArray(){
@@ -359,7 +288,7 @@ function setVertexArray(){
 	 vertices[20],vertices[21],vertices[22],vertices[23],
 	 vertices[24],vertices[25],vertices[26],vertices[27],
 	 vertices[28],vertices[29],vertices[30],vertices[31]]);
-	 if(setup){
+	 if(isSetup){
 	  gl.bindBuffer(gl.ARRAY_BUFFER, vertexbuffer);
 	  
 	  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
@@ -367,3 +296,4 @@ function setVertexArray(){
 	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	 }
 }
+
