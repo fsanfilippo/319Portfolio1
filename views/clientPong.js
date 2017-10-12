@@ -99,7 +99,7 @@ var setup = function(){
 
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	connection = new WebSocket('ws://10.26.5.52:1337'); //TODO: change when we put on server
+	connection = new WebSocket('ws://10.26.2.205:1337'); //TODO: change when we put on server
 
 	connection.onopen = function () {
 		console.log("Connection Open!");// connection is opened and ready to use
@@ -111,6 +111,7 @@ var setup = function(){
 
 	connection.onclose = function(){
 		console.log("why is this closing?");
+		
 	}
 
 	connection.onmessage = function (message) {

@@ -1,5 +1,5 @@
 var express = require('express');
-var path    = require("path");
+var path = require("path");
 var app = new express();
 
 app.use(express.static(__dirname + '/views'));
@@ -43,7 +43,7 @@ wsServer.on('request', function(request) {
   });
 
   connection.on('close', function(connection) {
-    // close user connection
+    
   });
 });
 
