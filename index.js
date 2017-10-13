@@ -62,6 +62,7 @@ wsServer.on('request', function(request) {
       clientLeft = game.client1;
     }
     
+    
     clientLeft.send(JSON.stringify({newGame: "Hey, this data don't matter"}));
 
     gameMap.delete(game.client1);
@@ -114,6 +115,7 @@ addNewClient = function(client){
     
 }
 
+
 //represents one game between two clients
 class GameState {
   constructor(client1, client2, ID){
@@ -157,7 +159,7 @@ class GameState {
         game.updateGame();
       };
       
-      this.interval = setInterval(updateTheGame, interval);
+      this.gameInterval = setInterval(updateTheGame, interval);
       
   }
   //paddleDir: 0 is down 1 is up
@@ -177,11 +179,15 @@ class GameState {
   sendGameState(){
 
     if(this.winner){
+      //console.log(this.score);
       var winner = JSON.stringify({winner: this.winner, score: this.score})
       this.client1.send(winner);
       this.client2.send(winner);
-      this.active = false;
-      clearInterval(this.interval);
+      this.active = undefined;
+      clearInterval(this.gameInterval);
+    }
+    else if(!this.active){
+      clearInterval(this.gameInterval);
     }
     else if(this.active){ //incase the game was deactivated and players don't exist anymore 
       var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});

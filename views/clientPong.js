@@ -147,8 +147,6 @@ var setup = function(){
 		}
 		else if(json.winner){
 			if(playerNum == json.winner){
-				console.log(score);
-				console.log(json.winner);
 				msgDisplay.textContent = "YOU WON! :)";
 			}
 			else{
@@ -268,7 +266,7 @@ function animate(){
 }
 
 function setScore(){
-	document.getElementById('score').innerHTML = score[0]+"-"+score[1];
+	document.getElementById('score').innerHTML = "SCORE | " + score[0]+"-"+score[1];
 }
 
 function sendInput(){
