@@ -10,8 +10,8 @@ var connection; //WebSocket connection
 //KeyCodes: w:up-87  s:down-83
 var score = [0,0];
 var playerNum = undefined; //determines if you are player1 or player2
-var assingedPlayerNum = false; //if the game isn't started you will be recieveing player assignment
-
+var assingedGame = false; //if the game isn't started you will be recieveing player assignment
+var msgDisplay = document.getElementById("displayWinner");
 
 var numPoints = 16;
 var vertexArray;
@@ -126,15 +126,34 @@ var setup = function(){
 		return;
 		}
 
-		if(!assingedPlayerNum){
-			playerNum = (json.player === "true") ? 1 : 2;
-			assingedPlayerNum = true;
-			gameID = json.gameID;
+		if(!assingedGame){
+			if(json.waiting){
+				msgDisplay.textContent = "Waiting for other player...";
+			}
+			else{
+				msgDisplay.textContent = "";
+				playerNum = (json.player === "true") ? 1 : 2;
+				assingedGame = true;
+				gameID = json.gameID;
+			}
 		}
+		//indicates the game ended and we're starting a new one
 		else if(json.newGame){
-			assingedPlayerNum = false;
+			assingedGame = false;
 			playerNum = undefined;
 			gameID = undefined;
+			msgDisplay.textContent = "";
+			
+		}
+		else if(json.winner){
+			if(playerNum == json.winner){
+				msgDisplay.textContent = "YOU WON! :)";
+			}
+			else{
+				msgDisplay.textContent = "YOU LOST :(";
+			}
+			score[0] = json.score.left;
+			score[1] = json.score.right;
 		}
 		else{
 			
@@ -247,7 +266,7 @@ function animate(){
 }
 
 function setScore(){
-	document.getElementById('score').innerHTML = score[0]+"-"+score[1];
+	document.getElementById('score').innerHTML = "SCORE | " + score[0]+"-"+score[1];
 }
 
 function sendInput(){
