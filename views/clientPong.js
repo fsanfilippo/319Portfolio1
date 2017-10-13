@@ -1,11 +1,13 @@
 var fps = 30;
 var fpsInterval, startTime, now, before, elapsed;
-var leftup = false;
-var leftdown = false;
+var up = false;
+var down = false;
+var gameID = undefined;
+
 
 var side = '';
 var connection; //WebSocket connection
-//KeyCodes: w:leftup-87  s:leftdown-83
+//KeyCodes: w:up-87  s:down-83
 var score = [0,0];
 var playerNum = undefined; //determines if you are player1 or player2
 var assingedPlayerNum = false; //if the game isn't started you will be recieveing player assignment
@@ -99,7 +101,7 @@ var setup = function(){
 
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	connection = new WebSocket('ws://10.26.2.205:1337'); //TODO: change when we put on server
+	connection = new WebSocket('ws://127.0.0.1:1337'); //TODO: change when we put on server
 
 	connection.onopen = function () {
 		console.log("Connection Open!");// connection is opened and ready to use
@@ -115,22 +117,26 @@ var setup = function(){
 	}
 
 	connection.onmessage = function (message) {
-		// try to decode json (I assume that each message
-		// from server is json)
+		var json;
+
+		try {
+			json = JSON.parse(message.data);
+		} catch (e) {
+			console.log('This doesn\'t look like a valid JSON: ', message.data);
+		return;
+		}
+
 		if(!assingedPlayerNum){
-			console.log(message.data);
-			playerNum = (message.data === "true") ? 1 : 2;
+			playerNum = (json.player === "true") ? 1 : 2;
 			assingedPlayerNum = true;
+			gameID = json.gameID;
+		}
+		else if(json.newGame){
+			assingedPlayerNum = false;
+			playerNum = undefined;
+			gameID = undefined;
 		}
 		else{
-			var json;
-			try {
-			json = JSON.parse(message.data);
-			} catch (e) {
-			console.log('This doesn\'t look like a valid JSON: ',
-				message.data);
-			return;
-			}
 			
 			//assume a vertices attribute in json object
 			vertices = json.vertices;
@@ -247,23 +253,23 @@ function setScore(){
 function sendInput(){
 	var paddleDir = undefined;
 	
-	if(leftup){
+	if(up){
 		paddleDir = "1";
 	}
-	else if(leftdown){
+	else if(down){
 		paddleDir = "0";
 	}
 	
-	var sendObj = JSON.stringify({paddle: paddleDir, player: playerNum});
+	var sendObj = JSON.stringify({paddle: paddleDir, player: playerNum, gameID: gameID});
 	connection.send(sendObj);
 }
 
 window.onkeydown = function(e){
 	var key = e.keyCode;
 	if(key == 87){
-		leftup = true;
+		up = true;
 	}else if(key == 83){
-		leftdown = true;
+		down = true;
 	}
 	sendInput();
 }
@@ -271,9 +277,9 @@ window.onkeydown = function(e){
 window.onkeyup = function(e){
 	var key = e.keyCode;
 	if(key == 87){
-		leftup = false;
+		up = false;
 	}else if(key == 83){
-		leftdown = false;
+		down = false;
 	}
 	sendInput();
 }
@@ -296,5 +302,9 @@ function setVertexArray(){
 	  
 	  gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	 }
+}
+
+window.onbeforeunload = function() {
+	connection.close();
 }
 

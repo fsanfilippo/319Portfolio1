@@ -13,10 +13,12 @@ app.get('/',function(req,res){
 });
 
 const interval = 1000/60;
-var gameStates = new Array();
+var gameMap = new Map();
 const movespeed = 0.06; //the move speed of the ball
-var clientGameStates = new Map();
+var runningGames = new Map();
 var WebSocketServer = require('websocket').server;
+var waitingOnClient = undefined;//hold the clients that
+var ID = 0; //game ID of games 
 var http = require('http');
 
 var server = http.createServer(function(request, response) {
@@ -35,27 +37,55 @@ wsServer = new WebSocketServer({
 // WebSocket server
 wsServer.on('request', function(request) {
   var connection = request.accept(null, request.origin);
+  
   addNewClient(connection);
   // This is the most important callback for us, we'll handle
   // all messages from users here.
   connection.on('message', function(message){
-    updateGameState(message, connection);
+    updateGameState(message);
   });
 
-  connection.on('close', function(connection) {
+  connection.on('close', function(message) {
+
+    var gameID = gameMap.get(connection);
     
+    var game = runningGames.get(gameID).game;
+
+    game.active = false;//stop from sending game state updates
+
+    var clientLeft;
+    if(connection == game.client1){
+      clientLeft = game.client2;
+    }
+    else{
+      
+      clientLeft = game.client1;
+    }
+    
+    clientLeft.send(JSON.stringify({newGame: "Hey, this data don't matter"}));
+
+    gameMap.delete(game.client1);
+    gameMap.delete(game.client2);
+    runningGames.delete(gameID);
+    addNewClient(clientLeft);
+
+
   });
 });
 
 
-function updateGameState(message, client){
+function updateGameState(message){
   //find game from client
-  var gameObj = clientGameStates.get(client);
-  var obj = JSON.parse(message.utf8Data);
-
-  switch(obj.player){
-    case 1: gameObj.game.player1PaddleDir = obj.paddle; break;
-    case 2: gameObj.game.player2PaddleDir = obj.paddle; break;
+  msgObj = JSON.parse(message.utf8Data);
+  
+  var gameObj = runningGames.get(msgObj.gameID);
+  
+  //game gets deleted when switching player
+  if(gameObj){
+    switch(msgObj.player){
+      case 1: gameObj.game.player1PaddleDir = msgObj.paddle; break;
+      case 2: gameObj.game.player2PaddleDir = msgObj.paddle; break;
+    }
   }
   
 } 
@@ -63,47 +93,38 @@ function updateGameState(message, client){
 
 addNewClient = function(client){
     //check for client that needs pair
-    //if another client is waiting for a player add client to that object in Connections map
-
-    //handle edge case for first client
-    if(gameStates.length == 0){
-      let game = new GameState(client);
-      gameStates.push(game);
-      clientGameStates.set(client,{game: game, client: 1});
-      client.send("true");//indicate they are the first player
-      return;
+    if(waitingOnClient){
+      runningGames.set(ID, {
+        client1: waitingOnClient,
+        client2: client,
+        game: new GameState(waitingOnClient, client, ID)});
+      var client1Obj = JSON.stringify({player: "true", gameID: ID});//true means player 1
+      var client2Obj = JSON.stringify({player: "false", gameID: ID});//false means player 2
+      waitingOnClient.send(client1Obj);
+      client.send(client2Obj);
+      gameMap.set(waitingOnClient, ID);
+      gameMap.set(client, ID);
+      waitingOnClient = undefined;
+      ID++;
     }
-
-    
-    var gameStateCheck = gameStates[gameStates.length - 1];
-    //add second client
-    if(gameStateCheck.waitingOnClient){
-        gameStateCheck.addClient2(client);
-        clientGameStates.set(client, {game: gameStateCheck, client: 2});
-        client.send("false"); //indicated they are player 2
-    }
-    //add new game
     else{
-      let game = new GameState(client);
-      gameStates.push(game);
-      clientGameStates.set(client, {game: game, client: 1});
-      client.send("true"); //indicate they are player 1
+      waitingOnClient = client;
     }
-    
     
 }
 
 //represents one game between two clients
 class GameState {
-  constructor(client1){
+  constructor(client1, client2, ID){
+    this.ID = ID;
     this.client1 = client1;
-    this.client2 = undefined;
-    this.waitingOnClient = true; //if true, one client is waiting for another client
+    this.client2 = client2;
     this.ballVelX = 0.02;
     this.ballVelY = 0.02;
     this.player1PaddleDir = undefined; //0 down, 1 up, undefined not moving
     this.player2PaddleDir = undefined; 
     this.score = {left: 0, right: 0};
+    this.active = true;
     this.vertices = [
       -1.0, -0.9,		//0(0,1)		lower boundary
       1.0, -0.9,		//1(2,3)
@@ -139,9 +160,6 @@ class GameState {
   }
   //paddleDir: 0 is down 1 is up
   updateGame(){
-    if(this.waitingOnClient){
-      return;
-    }
     
     var paddle1 = this.player1PaddleDir;
     var paddle2 = this.player2PaddleDir;
@@ -154,16 +172,13 @@ class GameState {
   }
   
 
-  //adds the second client
-  addClient2(client){
-    this.client2 = client;
-    this.waitingOnClient = false;
-  }
-
   sendGameState(){
-    var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});
-    this.client1.send(gameStateObj);
-    this.client2.send(gameStateObj);//sends the game state to both clients
+    if(this.active){ //incase the game was deactivated and players don't exist anymore 
+      var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});
+      this.client1.send(gameStateObj);
+      this.client2.send(gameStateObj);//sends the game state to both clients
+    }
+    
   }
 
 } //end of game class
