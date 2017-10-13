@@ -108,6 +108,7 @@ addNewClient = function(client){
       ID++;
     }
     else{
+      client.send(JSON.stringify({waiting:" "}));
       waitingOnClient = client;
     }
     
@@ -125,6 +126,7 @@ class GameState {
     this.player2PaddleDir = undefined; 
     this.score = {left: 0, right: 0};
     this.active = true;
+    this.winner = undefined;
     this.vertices = [
       -1.0, -0.9,		//0(0,1)		lower boundary
       1.0, -0.9,		//1(2,3)
@@ -155,7 +157,7 @@ class GameState {
         game.updateGame();
       };
       
-      setInterval(updateTheGame, interval);
+      this.interval = setInterval(updateTheGame, interval);
       
   }
   //paddleDir: 0 is down 1 is up
@@ -173,11 +175,20 @@ class GameState {
   
 
   sendGameState(){
-    if(this.active){ //incase the game was deactivated and players don't exist anymore 
+
+    if(this.winner){
+      var winner = JSON.stringify({winner: this.winner, score: this.score})
+      this.client1.send(winner);
+      this.client2.send(winner);
+      this.active = false;
+      clearInterval(this.interval);
+    }
+    else if(this.active){ //incase the game was deactivated and players don't exist anymore 
       var gameStateObj = JSON.stringify({vertices: this.vertices, score: this.score});
       this.client1.send(gameStateObj);
       this.client2.send(gameStateObj);//sends the game state to both clients
     }
+    
     
   }
 
@@ -272,12 +283,24 @@ function checkCollision(vertices, game, paddle1, paddle2){
 	}
 	
 	if(vertices[24] < -0.99){
-		game.score.right += 1;
-		resetBall(vertices, game);
+    game.score.right += 1;
+    if(game.score.right === 10){
+      game.winner = 2;
+    }
+    else{
+      resetBall(vertices, game);
+    }
+		
 	}
 	else if(vertices[26] > 0.99){
-		game.score.left += 1;
-		resetBall(vertices, game);
+    game.score.left += 1;
+    if(game.score.left === 10){
+      game.winner = 1;
+    }
+    else{
+      resetBall(vertices, game);
+    }
+		
 	}
 }
 
