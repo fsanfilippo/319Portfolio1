@@ -5,9 +5,7 @@
     "node": ">= v0.6"
   },
   "dependencies": {
-    "bootstrap": "^4.0.0-beta",
     "express": "^4.15.4",
-    "popper.js": "^1.12.5",
     "websocket": "^1.0.24"
   }
 }
