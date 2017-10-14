@@ -7,9 +7,6 @@
   "dependencies": {
     "bootstrap": "^4.0.0-beta",
     "express": "^4.15.4",
-    "jquery": "^3.2.1",
-    "mongodb": "1.2.14",
-    "monk": "0.7.1",
     "popper.js": "^1.12.5",
     "websocket": "^1.0.24"
   }
