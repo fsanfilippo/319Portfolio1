@@ -3,10 +3,7 @@ var path = require("path");
 var app = new express();
 
 app.use(express.static(__dirname + '/views'));
-app.use('/js', express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
-app.use('/js', express.static(__dirname + '/node_modules/popper.js/dist')); // redirect popper
-app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
-app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
+
 
 app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/pong.html'));
@@ -154,10 +151,10 @@ class GameState {
       
 
       //resetBall(this.vertices, this);
-      var game = this;
+      
       var updateTheGame = function(){
-        game.updateGame();
-      };
+        this.updateGame();
+      }.bind(this);
       
       this.gameInterval = setInterval(updateTheGame, interval);
       
