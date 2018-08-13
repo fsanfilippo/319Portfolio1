@@ -1,0 +1,5 @@
+names
+ball speed increases
+Fix paddle collision with increased speed
+Reformat message type handling
+Plot state diagrams for players entering/waiting/playing/exiting/gameOver/replaying/etc...

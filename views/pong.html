@@ -34,13 +34,17 @@ void main()
     Please use a browser that supports "canvas"
 	</canvas>
 	<h1 id="displayWinner"></h1>
+	<h2 id="displayOpponentName"></h2>
 	<h3>W is Up | S is Down</h3>
 	<input type="button" value = "Play New Game / Resart"onClick="window.location.reload()"></input>
-
+	<input type="text" id="nameInput"></input>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="resources/webgl-utils.js"></script>
 		<script src="resources/webgl-debug.js"></script>
 		<script src="resources/cuon-utils.js"></script>
-		<script src="clientPong.js"></script>
-		<script>window.onload = main</script>
+		<script src="resources/require.js"></script>
+		<scirpt src="resources/WebGlInit.js"></script>
+		<script src="app.js"></script>
+		<script data-main="app" src="resources/require.js"></script>
 </body>
 </html>

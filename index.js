@@ -9,10 +9,12 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/pong.html'));
 });
 
+
 const interval = 1000/60;
 var gameMap = new Map();
 const movespeed = 0.06; //the move speed of the ball
 var runningGames = new Map();
+var waitingForName = new Array();
 var WebSocketServer = require('websocket').server;
 var waitingOnClient = undefined;//hold the clients that
 var ID = 0; //game ID of games 
@@ -39,7 +41,17 @@ wsServer.on('request', function(request) {
   // This is the most important callback for us, we'll handle
   // all messages from users here.
   connection.on('message', function(message){
-    updateGameState(message);
+    msgObj = JSON.parse(message.utf8Data);
+    console.log(msgObj);
+    if(msgObj.name){
+      connection.name = msgObj.name;
+      findPartners(connection);
+    }
+    else{
+      updateGameState(message);
+    }
+
+   
   });
 
   connection.on('close', function(message) {
@@ -90,14 +102,19 @@ function updateGameState(message){
 
 
 addNewClient = function(client){
+
+    waitingForName.push(client);
+}
+
+findPartners = function(client){
     //check for client that needs pair
     if(waitingOnClient){
       runningGames.set(ID, {
         client1: waitingOnClient,
         client2: client,
         game: new GameState(waitingOnClient, client, ID)});
-      var client1Obj = JSON.stringify({player: "true", gameID: ID});//true means player 1
-      var client2Obj = JSON.stringify({player: "false", gameID: ID});//false means player 2
+      var client1Obj = JSON.stringify({player: "true", gameID: ID, opponentName: client.name});//true means player 1
+      var client2Obj = JSON.stringify({player: "false", gameID: ID, opponentName: waitingOnClient.name});//false means player 2
       waitingOnClient.send(client1Obj);
       client.send(client2Obj);
       gameMap.set(waitingOnClient, ID);
