@@ -19,7 +19,7 @@ define(function (require) {
 	var WebSocketInit = require('./WebSocketInit');
 
 	function main(){
-		
+		console.log("stasdfing");
 		setup();
 		animateTitle();
 	}
