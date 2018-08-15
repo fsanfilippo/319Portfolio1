@@ -21,6 +21,27 @@ define(function (require) {
 	function main(){
 		
 		setup();
+		animateTitle();
+	}
+	var animateTitle = function(){
+		var frame = "|--------------------|";
+		var closedBall = "⬤";
+		var ballPos = 1;
+		var dir = -1;
+
+		setInterval(()=>{
+			
+			if(ballPos == 20 || ballPos == 1){
+				dir*=-1;
+			}
+			
+			frame = frame.replaceAt(ballPos, "-");
+			ballPos += dir;
+			frame = frame.replaceAt(ballPos, closedBall);
+			$("#title").text(frame);
+			
+		}, 150);
+		
 	}
 
 	var setup = function(){
@@ -163,3 +184,7 @@ define(function (require) {
 
 	
 });
+
+String.prototype.replaceAt=function(index, replacement) {
+    return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
+}

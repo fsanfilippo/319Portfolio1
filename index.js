@@ -1,7 +1,9 @@
 var express = require('express');
 var path = require("path");
 var app = new express();
-
+const APP_PORT = 3000;
+const WEB_SOCKET_PORT = 1337;
+var status = "▰▱▱▱▱▱▱▱▱▱ 1%";
 app.use(express.static(__dirname + '/views'));
 
 
@@ -9,6 +11,7 @@ app.get('/',function(req,res){
   res.sendFile(path.join(__dirname + '/views/pong.html'));
 });
 
+process.stdout.write("Loading Pong:" +  status + "\r");
 
 const interval = 1000/60;
 var gameMap = new Map();
@@ -25,13 +28,15 @@ var server = http.createServer(function(request, response) {
   // server we don't have to implement anything.
 });
 
-server.listen(1337, function() { });
+server.listen(WEB_SOCKET_PORT, function() { });
 
 // create the server
 wsServer = new WebSocketServer({
   httpServer: server
 });
 
+var status = "▰▰▰▱▱▱▱▱▱▱ 30%";
+process.stdout.write("Loading Pong:" +  status + "\r");
 
 // WebSocket server
 wsServer.on('request', function(request) {
@@ -42,7 +47,6 @@ wsServer.on('request', function(request) {
   // all messages from users here.
   connection.on('message', function(message){
     msgObj = JSON.parse(message.utf8Data);
-    console.log(msgObj);
     if(msgObj.name){
       connection.name = msgObj.name;
       findPartners(connection);
@@ -83,6 +87,8 @@ wsServer.on('request', function(request) {
   });
 });
 
+var status = "▰▰▰▰▱▱▱▱▱▱ 44%";
+process.stdout.write("Loading Pong:" +  status + "\r");
 
 function updateGameState(message){
   //find game from client
@@ -129,6 +135,8 @@ findPartners = function(client){
     
 }
 
+var status = "▰▰▰▰▱▱▱▱▱▱ 44%";
+process.stdout.write("Loading Pong:" +  status + "\r");
 
 //represents one game between two clients
 class GameState {
@@ -214,7 +222,8 @@ class GameState {
 
 } //end of game class
 
-
+var status = "▰▰▰▰▰▱▱▱▱▱ 54%";
+process.stdout.write("Loading Pong:" +  status + "\r");
 
 /**
  * 
@@ -324,6 +333,10 @@ function checkCollision(vertices, game, paddle1, paddle2){
 	}
 }
 
+var status = "▰▰▰▰▰▰▰▱▱▱ 76%";
+process.stdout.write("Loading Pong:" +  status + "\r");
+
+
 function resetBall(vertices, game){
 	vertices[24] = -0.03;
 	vertices[25] = -0.06;
@@ -335,5 +348,8 @@ function resetBall(vertices, game){
 	vertices[31] = 0.06;
 	game.ballVelX = game.ballVelX*(-1);
 }
+var status = "▰▰▰▰▰▰▰▰▰▰▰ 100%";
+process.stdout.write("Loading Pong:" +  status + "\r\n");
 
-app.listen(3000);
+app.listen(APP_PORT);
+console.log("App running on port: " + APP_PORT);

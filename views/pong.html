@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>PONG!!!!!!</title>
+<title id="title"></title>
 </head>
 
 <body> 
@@ -29,6 +29,7 @@ void main()
 </script>
 
 	<h1 id="score">0-0</h1>
+	<input type="button" value = "Play New Game / Resart"onClick="window.location.reload()"></input>
 
 	<canvas id="theCanvas" width="1000" height="500">
     Please use a browser that supports "canvas"
@@ -36,7 +37,8 @@ void main()
 	<h1 id="displayWinner"></h1>
 	<h2 id="displayOpponentName"></h2>
 	<h3>W is Up | S is Down</h3>
-	<input type="button" value = "Play New Game / Resart"onClick="window.location.reload()"></input>
+	
+	<label for="nameInput">Enter Name: <label/>
 	<input type="text" id="nameInput"></input>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="resources/webgl-utils.js"></script>
