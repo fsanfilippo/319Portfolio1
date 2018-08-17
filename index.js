@@ -62,8 +62,11 @@ wsServer.on('request', function(request) {
 
     var gameID = gameMap.get(connection);
     
-    var game = runningGames.get(gameID).game;
-
+    var gameObj = runningGames.get(gameID);
+    if(!gameObj){
+      return; //Player isn't currently in a game
+    }
+    var game = gameObj.game;
     game.active = false;//stop from sending game state updates
 
     var clientLeft;

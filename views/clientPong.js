@@ -5,14 +5,14 @@ define(function (require) {
 	var down = false;
 	var gameID = undefined;
 	var state = 0;
-
+	var name;
+	var opponentName;
 	var connection; //WebSocket connection
 	//KeyCodes: w:up-87  s:down-83
 	var score = [0,0];
 	var playerNum = undefined; //determines if you are player1 or player2
 	var assingedGame = false; //if the game isn't started you will be recieveing player assignment
 	var msgDisplay = document.getElementById("displayWinner");
-	var opponentName = $("#displayOpponentName");
 	var vertices = [];
 
 	var Render = require('./Render');
@@ -21,16 +21,17 @@ define(function (require) {
 	function main(){
 		setup();
 		animateTitle();
+		$('#myModal').modal('show');
 	}
 	var animateTitle = function(){
-		var frame = "|--------------------|";
+		var frame = "|--------------|";
 		var closedBall = "⬤";
 		var ballPos = 1;
 		var dir = -1;
 
 		setInterval(()=>{
 			
-			if(ballPos == 20 || ballPos == 1){
+			if(ballPos == (frame.length - 2) || ballPos == 1){
 				dir*=-1;
 			}
 			
@@ -80,7 +81,18 @@ define(function (require) {
 				playerNum = (json.player === "true") ? 1 : 2;
 				assingedGame = true;
 				gameID = json.gameID;
-				opponentName.text(json.opponentName);
+				opponentName = json.opponentName;
+
+				switch(playerNum){
+					case(1):{
+						$("#nameLeft").text(name);
+						$("#nameRight").text(opponentName); 
+					}
+					case(2):{
+						$("#nameLeft").text(opponentName);
+						$("#nameRight").text(name);
+					}
+				}
 				console.log(json);
 			}
 		}
@@ -133,7 +145,8 @@ define(function (require) {
 	}
 
 	function setScore(){
-		document.getElementById('score').innerHTML = "SCORE | " + score[0]+"-"+score[1];
+		$('#scoreLeft').text(score[0]);
+		$('#scoreRight').text(score[1]);
 	}
 
 	function sendInput(){
@@ -162,8 +175,9 @@ define(function (require) {
 
 	window.onkeyup = function(e){
 		if (e.keyCode == 13) {
-			var name = $("#nameInput").val();
-			connection.send(JSON.stringify({name: name}))
+			name = $("#nameInput").val();
+			connection.send(JSON.stringify({name: name}));
+			$('#myModal').modal('hide');
 		}
 
 		var key = e.keyCode;

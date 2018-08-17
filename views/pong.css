@@ -1,0 +1,40 @@
+.modal-body{
+    width: fit-content;
+    margin: 0 auto;
+    display:block
+}
+
+#gameContainer {
+    text-align:center;
+}
+
+#instructions{
+    text-align: center;
+}
+
+#scoreBoard{
+    width:1000px;
+    margin: 0 auto;
+    font-size:2em;
+   
+}
+
+p{
+    display:inline-block;
+}
+.titleContainer{
+    margin:0 auto;
+}
+
+.lb-sm {
+    font-size: 12px;
+}
+
+.lb-md {
+    font-size: 16px;
+}
+
+.lb-lg {
+    font-size: 20px;
+}
+ 

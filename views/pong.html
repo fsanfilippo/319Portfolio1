@@ -5,6 +5,8 @@
 	<title id="title"></title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="pong.css">
 	<script src="resources/webgl-utils.js"></script>
 	<script src="resources/webgl-debug.js"></script>
 	<script src="resources/cuon-utils.js"></script>
@@ -36,24 +38,52 @@
 
 <body> 
 
-	<input type="button" value = "Play New Game / Resart"onClick="window.location.reload()"></input>
-	<div class="row">
-		<div class="col-md-6">
-			<h3 id="score"></h3>
+	<div id="gameContainer">
+		<div class="row" id="scoreBoard">
+			<div class="col-sm-4">
+				
+				<p id="nameLeft"></p>
+				<p>:</p>
+				<p id="scoreLeft"></p>
+				
+			</div>
+			<div class="col-sm-4 title float-center">
+					
+				<p>PONG</p>
+				
+			</div>
+					
+			<div class="col-sm-4 float-right">
+				
+				<p id="nameRight"></p>
+				<p>:</p>
+				<p id="scoreRight"></p>
+				
+			</div>
 		</div>
-		<div class="col-md-6 float-right">
-			<h1>Right</h1>
-		</div>
+		<canvas id="theCanvas" width="1000" height="500">
+			Please use a browser that supports "canvas"
+		</canvas>
 	</div>
-	<canvas id="theCanvas" width="1000" height="500">
-    Please use a browser that supports "canvas"
-	</canvas>
+	
 	<h1 id="displayWinner"></h1>
 	<h2 id="displayOpponentName"></h2>
-	<h3>W is Up | S is Down</h3>
 	
-	<label for="nameInput">Enter Name: <label/>
-	<input type="text" id="nameInput"></input>
+
+	<!-- Modal -->
+	<div id="myModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-body">
+					<label for="nameInput" class="lb-lg label label-default">Enter Name</label>
+					<input type="text" id="nameInput" name="nameInput"></input>
+					<h3 id="instructions">W is Up --- S is Down</h3>
+				</div>
+			</div>
+		</div>
+	</div>
 		
 </body>
 </html>
