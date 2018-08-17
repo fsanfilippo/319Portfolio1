@@ -1,36 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title id="title"></title>
+	<meta charset="utf-8" />
+	<title id="title"></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="resources/webgl-utils.js"></script>
+	<script src="resources/webgl-debug.js"></script>
+	<script src="resources/cuon-utils.js"></script>
+	<script src="resources/require.js"></script>
+	<scirpt src="resources/WebGlInit.js"></script>
+	<script src="app.js"></script>
+	<script data-main="app" src="resources/require.js"></script>
+
+	<script id="vertexShader" type="x-shader/x-vertex">
+		attribute vec4 a_Position;
+		
+		void main() 
+		{
+		  gl_Position = a_Position;
+		}
+		</script>
+		
+		<script id="fragmentShader" type="x-shader/x-fragment">
+		// In a webgl fragment shader, float precision has to be specified before
+		// any other variable declarations (in this case, "medium" precision)
+		precision mediump float;
+		uniform vec4 u_Color;
+		void main() 
+		{
+			gl_FragColor = vec4(0.8,1.0,0.8,1.0);
+		}
+	</script>
 </head>
 
 <body> 
 
-
-<script id="vertexShader" type="x-shader/x-vertex">
-attribute vec4 a_Position;
-
-void main() 
-{
-  gl_Position = a_Position;
-}
-</script>
-
-<script id="fragmentShader" type="x-shader/x-fragment">
-// In a webgl fragment shader, float precision has to be specified before
-// any other variable declarations (in this case, "medium" precision)
-precision mediump float;
-uniform vec4 u_Color;
-void main() 
-{
-	gl_FragColor = vec4(0.8,1.0,0.8,1.0);
-}
-</script>
-
-	<h1 id="score">0-0</h1>
 	<input type="button" value = "Play New Game / Resart"onClick="window.location.reload()"></input>
-
+	<div class="row">
+		<div class="col-md-6">
+			<h3 id="score"></h3>
+		</div>
+		<div class="col-md-6 float-right">
+			<h1>Right</h1>
+		</div>
+	</div>
 	<canvas id="theCanvas" width="1000" height="500">
     Please use a browser that supports "canvas"
 	</canvas>
@@ -40,13 +54,6 @@ void main()
 	
 	<label for="nameInput">Enter Name: <label/>
 	<input type="text" id="nameInput"></input>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<script src="resources/webgl-utils.js"></script>
-		<script src="resources/webgl-debug.js"></script>
-		<script src="resources/cuon-utils.js"></script>
-		<script src="resources/require.js"></script>
-		<scirpt src="resources/WebGlInit.js"></script>
-		<script src="app.js"></script>
-		<script data-main="app" src="resources/require.js"></script>
+		
 </body>
 </html>

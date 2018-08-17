@@ -12,14 +12,13 @@ define(function (require) {
 	var playerNum = undefined; //determines if you are player1 or player2
 	var assingedGame = false; //if the game isn't started you will be recieveing player assignment
 	var msgDisplay = document.getElementById("displayWinner");
-	var opponentName = document.getElementById("displayOpponentName");
+	var opponentName = $("#displayOpponentName");
 	var vertices = [];
 
 	var Render = require('./Render');
 	var WebSocketInit = require('./WebSocketInit');
 
 	function main(){
-		console.log("stasdfing");
 		setup();
 		animateTitle();
 	}
@@ -81,7 +80,7 @@ define(function (require) {
 				playerNum = (json.player === "true") ? 1 : 2;
 				assingedGame = true;
 				gameID = json.gameID;
-				opponentName = json.opponentName;
+				opponentName.text(json.opponentName);
 				console.log(json);
 			}
 		}
@@ -162,9 +161,9 @@ define(function (require) {
 	}
 
 	window.onkeyup = function(e){
-
 		if (e.keyCode == 13) {
-			connection.send(JSON.stringify({name: "Frank"}))
+			var name = $("#nameInput").val();
+			connection.send(JSON.stringify({name: name}))
 		}
 
 		var key = e.keyCode;
