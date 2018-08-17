@@ -1,9 +1,10 @@
+var status = "▰▱▱▱▱▱▱▱▱▱ 1%";
 var express = require('express');
 var path = require("path");
 var app = new express();
 const APP_PORT = 3000;
 const WEB_SOCKET_PORT = 1337;
-var status = "▰▱▱▱▱▱▱▱▱▱ 1%";
+
 app.use(express.static(__dirname + '/views'));
 
 
@@ -51,6 +52,32 @@ wsServer.on('request', function(request) {
       connection.name = msgObj.name;
       findPartners(connection);
     }
+    else if(msgObj.playAgain){
+      var gameObj = runningGames.get(msgObj.gameID);
+      var game = gameObj.game;
+      if(game.active){
+        console.log("Can't play again when game isn't over");
+      }
+      
+      switch(msgObj.playAgain){
+        case(1):{
+          game.playAgain.client1 = true;
+          break;
+        }
+        case(2):{
+          game.playAgain.client2 = true;
+          break;
+        }
+        default:{
+          console.log("something went wrong");
+        }
+      }
+      if(game.playAgain.client1 && game.playAgain.client2){
+        game.start();
+      }
+      
+
+    }
     else{
       updateGameState(message);
     }
@@ -74,12 +101,11 @@ wsServer.on('request', function(request) {
       clientLeft = game.client2;
     }
     else{
-      
       clientLeft = game.client1;
     }
     
     
-    clientLeft.send(JSON.stringify({newGame: "Hey, this data don't matter"}));
+    clientLeft.send(JSON.stringify({newPlayer: "Hey, this data don't matter"}));
 
     gameMap.delete(game.client1);
     gameMap.delete(game.client2);
@@ -118,12 +144,12 @@ addNewClient = function(client){
 findPartners = function(client){
     //check for client that needs pair
     if(waitingOnClient){
+      var client1Obj = JSON.stringify({player: "true", gameID: ID, opponentName: client.name});//true means player 1
+      var client2Obj = JSON.stringify({player: "false", gameID: ID, opponentName: waitingOnClient.name});//false means player 2
       runningGames.set(ID, {
         client1: waitingOnClient,
         client2: client,
         game: new GameState(waitingOnClient, client, ID)});
-      var client1Obj = JSON.stringify({player: "true", gameID: ID, opponentName: client.name});//true means player 1
-      var client2Obj = JSON.stringify({player: "false", gameID: ID, opponentName: waitingOnClient.name});//false means player 2
       waitingOnClient.send(client1Obj);
       client.send(client2Obj);
       gameMap.set(waitingOnClient, ID);
@@ -145,6 +171,7 @@ process.stdout.write("Loading Pong:" +  status + "\r");
 class GameState {
   constructor(client1, client2, ID){
     this.ID = ID;
+    this.playAgain = {client1: false, client2: false}
     this.client1 = client1;
     this.client2 = client2;
     this.ballVelX = 0.02;
@@ -159,7 +186,7 @@ class GameState {
       1.0, -0.9,		//1(2,3)
       
       -1.0, 0.9,		//2(4,5)		upper boundary
-      1.0, 0.9,		//3(6,7)
+      1.0, 0.9,		  //3(6,7)
       
       -0.82, -0.3,	//4(8,9)		left paddle, client1
       -0.8, -0.3,		//5(10,11)
@@ -169,7 +196,7 @@ class GameState {
       0.8, -0.3,		//8(16,17)		right paddle, client2
       0.82, -0.3,		//9(18,19)
       0.82, 0.3,		//10(20,21)
-      0.8, 0.3,		//11(22,23)
+      0.8, 0.3,		  //11(22,23)
       
       -0.03,-0.06,	//12(24,25)		ball
       0.03,-0.06,		//13(26,27)
@@ -177,15 +204,29 @@ class GameState {
       -0.03,0.06		//15(30,31)
       ];
       
+      this.start();
+      
+      
+  }
 
-      //resetBall(this.vertices, this);
-      
-      var updateTheGame = function(){
-        this.updateGame();
-      }.bind(this);
-      
-      this.gameInterval = setInterval(updateTheGame, interval);
-      
+  start(){
+    this.winner = undefined;
+    this.score = {left: 0, right: 0};
+    this.active = true;
+    this.playAgain.client1 = false;
+    this.playAgain.client2 = false;
+
+    var msg = JSON.stringify({newGame: "something"});
+    this.client1.send(msg);
+    this.client2.send(msg);
+
+
+
+    var updateTheGame = function(){
+      this.updateGame();
+    }.bind(this);
+    
+    this.gameInterval = setInterval(updateTheGame, interval);
   }
   //paddleDir: 0 is down 1 is up
   updateGame(){
@@ -204,11 +245,10 @@ class GameState {
   sendGameState(){
 
     if(this.winner){
-      //console.log(this.score);
       var winner = JSON.stringify({winner: this.winner, score: this.score})
       this.client1.send(winner);
       this.client2.send(winner);
-      this.active = undefined;
+      this.active = false;
       clearInterval(this.gameInterval);
     }
     else if(!this.active){

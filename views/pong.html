@@ -48,9 +48,7 @@
 				
 			</div>
 			<div class="col-sm-4 title float-center">
-					
 				<p>PONG</p>
-				
 			</div>
 					
 			<div class="col-sm-4 float-right">
@@ -66,24 +64,39 @@
 		</canvas>
 	</div>
 	
-	<h1 id="displayWinner"></h1>
-	<h2 id="displayOpponentName"></h2>
-	
 
-	<!-- Modal -->
-	<div id="myModal" class="modal fade" role="dialog">
+	<!-- Name Modal -->
+	<div id="nameModal" class="modal fade" role="dialog">
 		<div class="modal-dialog">
 
 			<!-- Modal content-->
 			<div class="modal-content">
 				<div class="modal-body">
-					<label for="nameInput" class="lb-lg label label-default">Enter Name</label>
+					<label for="nameInput" class="lb-lg label label-default">Name</label>
 					<input type="text" id="nameInput" name="nameInput"></input>
 					<h3 id="instructions">W is Up --- S is Down</h3>
+					<h3 id="msgDisplay"></h3>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<!-- End Game Modal -->
+	<div id="endGameModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-body">
+					<h1 id="result"></h1>
+					<button class="btn btn-default" id="playAgainBtn">Play Again?</button>
+					<h2 id="playAgainWait">Waiting For Other Player</h2>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
 		
 </body>
 </html>

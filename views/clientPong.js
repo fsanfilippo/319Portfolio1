@@ -12,7 +12,7 @@ define(function (require) {
 	var score = [0,0];
 	var playerNum = undefined; //determines if you are player1 or player2
 	var assingedGame = false; //if the game isn't started you will be recieveing player assignment
-	var msgDisplay = document.getElementById("displayWinner");
+	var result = $("#result");
 	var vertices = [];
 
 	var Render = require('./Render');
@@ -21,8 +21,11 @@ define(function (require) {
 	function main(){
 		setup();
 		animateTitle();
-		$('#myModal').modal('show');
+		$('#nameModal').modal({backdrop: 'static', keyboard: false})  
+		$('#nameModal').modal('show');
+		$('#playAgainWait').hide();
 	}
+
 	var animateTitle = function(){
 		var frame = "|--------------|";
 		var closedBall = "⬤";
@@ -72,47 +75,52 @@ define(function (require) {
 		return;
 		}
 
-		if(!assingedGame){
+		if(json.player || json.waiting){
 			if(json.waiting){
 				msgDisplay.textContent = "Waiting for other player...";
 			}
 			else{
-				msgDisplay.textContent = "";
+				
 				playerNum = (json.player === "true") ? 1 : 2;
 				assingedGame = true;
 				gameID = json.gameID;
 				opponentName = json.opponentName;
-
+				
 				switch(playerNum){
 					case(1):{
 						$("#nameLeft").text(name);
 						$("#nameRight").text(opponentName); 
+						break;
 					}
 					case(2):{
 						$("#nameLeft").text(opponentName);
 						$("#nameRight").text(name);
+						break;
 					}
 				}
-				console.log(json);
+				$('#nameModal').modal('hide');
 			}
 		}
 		//indicates the game ended and we're starting a new one
-		else if(json.newGame){
-			assingedGame = false;
-			playerNum = undefined;
-			gameID = undefined;
-			msgDisplay.textContent = "";
+		else if(json.newPlayer){
+			//TODO: this
 			
+		}
+		else if(json.newGame){
+			console.log("asdfasdf");
+			$('#endGameModal').modal('hide');
 		}
 		else if(json.winner){
 			if(playerNum == json.winner){
-				msgDisplay.textContent = "YOU WON! :)";
+				result.text("YOU WON! :)");
 			}
 			else{
-				msgDisplay.textContent = "YOU LOST :(";
+				result.text("YOU LOST :(");
 			}
 			score[0] = json.score.left;
 			score[1] = json.score.right;
+			$('#endGameModal').modal({backdrop: 'static', keyboard: false})
+			$('#endGameModal').modal('show'); 
 		}
 		else{
 			
@@ -149,6 +157,7 @@ define(function (require) {
 		$('#scoreRight').text(score[1]);
 	}
 
+
 	function sendInput(){
 		var paddleDir = undefined;
 		
@@ -177,7 +186,6 @@ define(function (require) {
 		if (e.keyCode == 13) {
 			name = $("#nameInput").val();
 			connection.send(JSON.stringify({name: name}));
-			$('#myModal').modal('hide');
 		}
 
 		var key = e.keyCode;
@@ -195,7 +203,11 @@ define(function (require) {
 	}
 	window.onload = main;
 
-	
+	$("#playAgainBtn").click(()=>{
+		var sendObj = JSON.stringify({playAgain: playerNum, gameID: gameID})
+		connection.send(sendObj);
+		$('#playAgainWait').show();
+	})
 });
 
 String.prototype.replaceAt=function(index, replacement) {
