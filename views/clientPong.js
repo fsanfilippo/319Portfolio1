@@ -201,7 +201,9 @@ define(function (require) {
 	window.onbeforeunload = function() {
 		connection.close();
 	}
-	window.onload = main;
+	$(function(){
+		main();
+	});
 
 	$("#playAgainBtn").click(()=>{
 		var sendObj = JSON.stringify({playAgain: playerNum, gameID: gameID})
