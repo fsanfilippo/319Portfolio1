@@ -13,7 +13,7 @@ var ballIndices = new Uint16Array([12, 13, 14, 12, 14, 15]);
 
 var gl;
 var vertices = [];
-var isSetup = false;
+var isSetup = false; //wheather it's setup
 
 define(function(){
     return{

@@ -10,7 +10,7 @@ define(function(){
             };
     
             connection.onclose = function(){
-                console.log("why is this closing?");
+                console.log("why is this closing?"); //Player probably left
                 
             }
     
